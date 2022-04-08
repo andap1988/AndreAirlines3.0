@@ -11,5 +11,6 @@ namespace AndreAirlinesAPI3._0Frontend.Models
         public string Name { get; set; }
         public Address Address { get; set; }
         public string LoginUser { get; set; }
+        public string ErrorCode { get; set; }
     }
 }

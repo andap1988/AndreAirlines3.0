@@ -15,5 +15,7 @@ namespace AndreAirlinesAPI3._0Frontend.Data
         }
 
         public DbSet<AndreAirlinesAPI3._0Frontend.Models.Airport> Airport { get; set; }
+
+        //public DbSet<AndreAirlinesAPI3._0Frontend.Models.AirportMongo> AirportMongo { get; set; }
     }
 }

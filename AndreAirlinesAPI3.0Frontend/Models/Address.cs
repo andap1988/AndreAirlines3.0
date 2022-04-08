@@ -1,8 +1,10 @@
-﻿namespace AndreAirlinesAPI3._0Frontend.Models
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace AndreAirlinesAPI3._0Frontend.Models
 {
+    [Keyless]
     public class Address
     {
-        public string Id { get; set; }
         public string District { get; set; }
         public string City { get; set; }
         public string Country { get; set; }
@@ -12,5 +14,6 @@
         public int Number { get; set; }
         public string Complement { get; set; }
         public string Continent { get; set; }
+        public string ErrorCode { get; set; }
     }
 }
