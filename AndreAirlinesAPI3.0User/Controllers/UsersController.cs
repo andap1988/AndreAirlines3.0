@@ -72,9 +72,11 @@ namespace AndreAirlinesAPI3._0User.Controllers
                     user.Address = address;
             }
 
-            var userInsertion = _userService.Create(user);
+            var userInsertion = await _userService.Create(user);
 
-            if (userInsertion.ErrorCode != null)
+            if (userInsertion.ErrorCode == "noLog")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
+            else if (userInsertion.ErrorCode != null)
                 return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(userInsertion.ErrorCode));
             else
                 return CreatedAtRoute("GetUser", new { id = user.Id }, user);
@@ -82,9 +84,11 @@ namespace AndreAirlinesAPI3._0User.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(string id, User userIn)
+        public async Task<IActionResult> Update(string id, User userIn)
         {
             User userLogin = new();
+            string returnMsg;
+
             userLogin = _userService.GetLoginUser(userIn.LoginUser);
 
             if (userLogin.LoginUser == null)
@@ -94,7 +98,10 @@ namespace AndreAirlinesAPI3._0User.Controllers
             else if (userLogin.Sector != "ADM")
                 return BadRequest("Usuário - " + ErrorMessage.ReturnMessage("noPermited"));
             else
-                _userService.Update(id, userIn);
+                returnMsg = await _userService.Update(id, userIn, userLogin);
+
+            if (returnMsg != "ok")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
             return NoContent();
         }

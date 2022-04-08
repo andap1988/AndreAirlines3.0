@@ -32,7 +32,7 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
 
         [HttpGet("{id}", Name = "GetFlight")]
         public ActionResult<Flight> Get(string id)
-        {            
+        {
             var flight = _flightService.Get(id);
 
             if (flight.ErrorCode != null)
@@ -48,21 +48,23 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
         {
             var flightInsertion = await _flightService.Create(flight);
 
-            if (flightInsertion.Origin.ErrorCode != null)
+            if (flightInsertion.ErrorCode == "noLog")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
+            else if (flightInsertion.Origin.ErrorCode != null)
                 return BadRequest("Aeroporto de Origem - " + ErrorMessage.ReturnMessage(flightInsertion.Origin.ErrorCode));
             else if (flightInsertion.Destiny.ErrorCode != null)
                 return BadRequest("Aeroporto de Destino - " + ErrorMessage.ReturnMessage(flightInsertion.Destiny.ErrorCode));
             else if (flightInsertion.Airship.ErrorCode != null)
                 return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(flightInsertion.Destiny.ErrorCode));
-            else
-                return CreatedAtRoute("GetFlight", new { id = flight.Id }, flight);
 
+            return CreatedAtRoute("GetFlight", new { id = flight.Id }, flight);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, Flight flightIn)
         {
             Flight flight = new();
+            string returnMsg;
 
             var user = await SearchUser.ReturnUser(flightIn.LoginUser);
 
@@ -80,7 +82,10 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
             else if (flight == null)
                 return NotFound();
             else
-                _flightService.Update(id, flightIn);
+                returnMsg = await _flightService.Update(id, flightIn, user);
+
+            if (returnMsg != "ok")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
             return NoContent();
         }

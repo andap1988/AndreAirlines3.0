@@ -48,14 +48,16 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
         {
             var basePriceInsertion = await _basePriceService.Create(basePrice);
 
-            if (basePriceInsertion.ErrorCode != null)
+            if (basePriceInsertion.ErrorCode == "noLog")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
+            else if (basePriceInsertion.ErrorCode != null)
                 return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(basePriceInsertion.ErrorCode));
             if (basePriceInsertion.Origin.ErrorCode != null)
                 return BadRequest("Aeroporto de Origem - " + ErrorMessage.ReturnMessage(basePriceInsertion.Origin.ErrorCode));
             else if (basePriceInsertion.Destiny.ErrorCode != null)
                 return BadRequest("Aeroporto de Destino - " + ErrorMessage.ReturnMessage(basePriceInsertion.Destiny.ErrorCode));
-            else
-                return CreatedAtRoute("GetBasePrice", new { id = basePrice.Id }, basePrice);
+
+            return CreatedAtRoute("GetBasePrice", new { id = basePrice.Id }, basePrice);
 
         }
 
@@ -63,6 +65,7 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
         public async Task<IActionResult> Update(string id, BasePrice basePriceIn)
         {
             BasePrice basePrice = new();
+            string returnMsg;
 
             var user = await SearchUser.ReturnUser(basePriceIn.LoginUser);
 
@@ -80,7 +83,10 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
             else if (basePrice == null)
                 return NotFound();
             else
-                _basePriceService.Update(id, basePriceIn);
+                returnMsg = await _basePriceService.Update(id, basePriceIn, user);
+
+            if (returnMsg != "ok")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
             return NoContent();
         }

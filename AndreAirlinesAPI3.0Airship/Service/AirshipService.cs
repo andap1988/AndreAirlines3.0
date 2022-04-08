@@ -1,6 +1,7 @@
 ﻿using AndreAirlinesAPI3._0Airship.Utils;
 using AndreAirlinesAPI3._0Models;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -131,11 +132,48 @@ namespace AndreAirlinesAPI3._0Airship.Service
             else
                 _airship.InsertOne(airship);
 
+            Log log = new();
+            log.User = user;
+            log.BeforeEntity = "";
+            log.AfterEntity = JsonConvert.SerializeObject(airship);
+            log.Operation = "create";
+            log.InsertionDate = DateTime.Now.Date;
+            log.ErrorCode = null;
+
+            var returnMsg = await PostLogService.InsertLog(log);
+
+            if (returnMsg != "ok")
+            {
+                _airship.DeleteOne(airshipIn => airshipIn.Id == airship.Id);
+                airship.ErrorCode = "noLog";
+
+                return airship;
+            }
+
             return airship;
         }
 
-        public void Update(string id, Airship airshipIn) =>
+        public async Task<string> Update(string id, Airship airshipIn, User user)
+        {
+            var airshipBefore = GetRegistration(airshipIn.Registration);
+
             _airship.ReplaceOne(airship => airship.Id == id, airshipIn);
+
+            Log log = new();
+            log.User = user;
+            log.BeforeEntity = JsonConvert.SerializeObject(airshipBefore);
+            log.AfterEntity = JsonConvert.SerializeObject(airshipIn);
+            log.Operation = "update";
+            log.InsertionDate = DateTime.Now.Date;
+            log.ErrorCode = null;
+
+            var returnMsg = await PostLogService.InsertLog(log);
+
+            if (returnMsg != "ok")
+                _airship.ReplaceOne(airship => airship.Id == id, airshipBefore);
+
+            return returnMsg;
+        }
 
         public void Remove(Airship airshipIn) =>
             _airship.DeleteOne(airship => airship.Id == airshipIn.Id);

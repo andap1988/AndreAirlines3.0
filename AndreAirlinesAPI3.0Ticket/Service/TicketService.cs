@@ -1,6 +1,7 @@
 ﻿using AndreAirlinesAPI3._0Models;
 using AndreAirlinesAPI3._0Ticket.Utils;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -141,11 +142,48 @@ namespace AndreAirlinesAPI3._0Ticket.Service
 
             _ticket.InsertOne(ticketWithPrice);
 
-            return ticket;
+            Log log = new();
+            log.User = user;
+            log.BeforeEntity = "";
+            log.AfterEntity = JsonConvert.SerializeObject(ticketWithPrice);
+            log.Operation = "create";
+            log.InsertionDate = DateTime.Now.Date;
+            log.ErrorCode = null;
+
+            var returnMsg = await PostLogService.InsertLog(log);
+
+            if (returnMsg != "ok")
+            {
+                _ticket.DeleteOne(ticketIn => ticketIn.Id == ticketWithPrice.Id);
+                ticketWithPrice.ErrorCode = "noLog";
+
+                return ticketWithPrice;
+            }
+
+            return ticketWithPrice;
         }
 
-        public void Update(string id, Ticket ticketIn) =>
+        public async Task<string> Update(string id, Ticket ticketIn, User user)
+        {
+            var ticketBefore = Get(ticketIn.Id);
+
             _ticket.ReplaceOne(ticket => ticket.Id == id, ticketIn);
+
+            Log log = new();
+            log.User = user;
+            log.BeforeEntity = JsonConvert.SerializeObject(ticketBefore);
+            log.AfterEntity = JsonConvert.SerializeObject(ticketIn);
+            log.Operation = "update";
+            log.InsertionDate = DateTime.Now.Date;
+            log.ErrorCode = null;
+
+            var returnMsg = await PostLogService.InsertLog(log);
+
+            if (returnMsg != "ok")
+                _ticket.ReplaceOne(ticket => ticket.Id == id, ticketBefore);
+
+            return returnMsg;
+        }
 
         public void Remove(Ticket ticketIn) =>
             _ticket.DeleteOne(ticket => ticket.Id == ticketIn.Id);

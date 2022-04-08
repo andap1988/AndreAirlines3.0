@@ -49,7 +49,9 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
         {
             var airshipInsertion = await _airshipService.Create(airship);
 
-            if (airshipInsertion.ErrorCode != null)
+            if (airshipInsertion.ErrorCode == "noLog")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
+            else if (airshipInsertion.ErrorCode != null)
                 return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(airshipInsertion.ErrorCode));
 
             return CreatedAtRoute("GetAirship", new { id = airship.Id }, airship);
@@ -59,6 +61,7 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
         public async Task<IActionResult> Update(string id, Airship airshipIn)
         {
             Airship airship = new();
+            string returnMsg;
 
             var user = await SearchUser.ReturnUser(airshipIn.LoginUser);
 
@@ -76,7 +79,10 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
             else if (airship == null)
                 return NotFound();
             else
-                _airshipService.Update(id, airshipIn);
+                returnMsg = await _airshipService.Update(id, airshipIn, user);
+
+            if (returnMsg != "ok")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
             return NoContent();
         }

@@ -1,6 +1,7 @@
 ﻿using AndreAirlinesAPI3._0Airport.Utils;
 using AndreAirlinesAPI3._0Models;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -97,24 +98,7 @@ namespace AndreAirlinesAPI3._0Airport.Service
                 airport.ErrorCode = "noBlank";
 
                 return airport;
-            }
-
-            /*
-            var searchAirport = GetIataCode(airport.IataCode);
-
-            if (searchAirport != null && searchAirport.ErrorCode != null)
-            {
-                airport.ErrorCode = searchAirport.ErrorCode;
-
-                return airport;
-            }
-            else if (searchAirport != null)
-            {
-                airport.ErrorCode = "yesAirport";
-
-                return airport;
-            }
-            */
+            }            
 
             var user = await SearchUser.ReturnUser(airport.LoginUser);
 
@@ -133,11 +117,48 @@ namespace AndreAirlinesAPI3._0Airport.Service
             else
                 _airport.InsertOne(airport);
 
+            Log log = new();
+            log.User = user;
+            log.BeforeEntity = "";
+            log.AfterEntity = JsonConvert.SerializeObject(airport);
+            log.Operation = "create";
+            log.InsertionDate = DateTime.Now.Date;
+            log.ErrorCode = null;
+
+            var returnMsg = await PostLogService.InsertLog(log);
+
+            if (returnMsg != "ok")
+            {
+                _airport.DeleteOne(airportIn => airportIn.Id == airport.Id);
+                airport.ErrorCode = "noLog";
+
+                return airport;
+            }
+
             return airport;
         }
 
-        public void Update(string id, Airport airportIn) =>
+        public async Task<string> Update(string id, Airport airportIn, User user)
+        {
+            var airportBefore = GetIataCode(airportIn.IataCode);
+            
             _airport.ReplaceOne(airport => airport.Id == id, airportIn);
+
+            Log log = new();
+            log.User = user;
+            log.BeforeEntity = JsonConvert.SerializeObject(airportBefore);
+            log.AfterEntity = JsonConvert.SerializeObject(airportIn);
+            log.Operation = "update";
+            log.InsertionDate = DateTime.Now.Date;
+            log.ErrorCode = null;
+
+            var returnMsg = await PostLogService.InsertLog(log);
+
+            if (returnMsg != "ok")
+                _airport.ReplaceOne(airport => airport.Id == id, airportBefore);
+
+            return returnMsg;
+        }
 
         public void Remove(Airport airportIn) =>
             _airport.DeleteOne(airport => airport.Id == airportIn.Id);

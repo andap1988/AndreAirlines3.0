@@ -1,8 +1,10 @@
 ﻿using AndreAirlinesAPI3._0Models;
 using AndreAirlinesAPI3._0User.Utils;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AndreAirlinesAPI3._0User.Service
 {
@@ -109,7 +111,7 @@ namespace AndreAirlinesAPI3._0User.Service
             }
         }
 
-        public User Create(User user)
+        public async Task<User> Create(User user)
         {
             var userLogin = GetLoginUser(user.LoginUser);
 
@@ -152,11 +154,48 @@ namespace AndreAirlinesAPI3._0User.Service
 
             _user.InsertOne(user);
 
+            Log log = new();
+            log.User = user;
+            log.BeforeEntity = "";
+            log.AfterEntity = JsonConvert.SerializeObject(user);
+            log.Operation = "create";
+            log.InsertionDate = DateTime.Now.Date;
+            log.ErrorCode = null;
+
+            var returnMsg = await PostLogService.InsertLog(log);
+
+            if (returnMsg != "ok")
+            {
+                _user.DeleteOne(userIn => userIn.Id == user.Id);
+                user.ErrorCode = "noLog";
+
+                return user;
+            }
+
             return user;
         }
 
-        public void Update(string id, User userIn) =>
+        public async Task<string> Update(string id, User userIn, User user)
+        {
+            var userBefore = Get(userIn.Id);
+
             _user.ReplaceOne(user => user.Id == id, userIn);
+
+            Log log = new();
+            log.User = user;
+            log.BeforeEntity = JsonConvert.SerializeObject(userBefore);
+            log.AfterEntity = JsonConvert.SerializeObject(userIn);
+            log.Operation = "update";
+            log.InsertionDate = DateTime.Now.Date;
+            log.ErrorCode = null;
+
+            var returnMsg = await PostLogService.InsertLog(log);
+
+            if (returnMsg != "ok")
+                _user.ReplaceOne(user => user.Id == id, userBefore);
+
+            return returnMsg;
+        }
 
         public void Remove(User userIn) =>
             _user.DeleteOne(user => user.Id == userIn.Id);

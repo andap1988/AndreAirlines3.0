@@ -49,7 +49,9 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
         {
             var ticketInsertion = await _ticketService.Create(ticket);
 
-            if (ticketInsertion.ErrorCode != null)
+            if (ticketInsertion.ErrorCode == "noLog")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
+            else if (ticketInsertion.ErrorCode != null)
                 return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(ticketInsertion.Flight.ErrorCode));
             else if (ticketInsertion.Flight.ErrorCode != null)
                 return BadRequest("Voo - " + ErrorMessage.ReturnMessage(ticketInsertion.Flight.ErrorCode));
@@ -68,6 +70,7 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
         public async Task<IActionResult> Update(string id, Ticket ticketIn)
         {
             Ticket ticket = new();
+            string returnMsg;
 
             var user = await SearchUser.ReturnUser(ticketIn.LoginUser);
 
@@ -85,7 +88,10 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
             else if (ticket == null)
                 return NotFound();
             else
-                _ticketService.Update(id, ticketIn);
+                returnMsg = await _ticketService.Update(id, ticketIn, user);
+
+            if (returnMsg != "ok")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
             return NoContent();
         }

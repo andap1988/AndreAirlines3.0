@@ -78,7 +78,9 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
 
             var airportInsertion = await _airportService.Create(airport);
 
-            if (airportInsertion.ErrorCode != null)
+            if (airportInsertion.ErrorCode == "noLog")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
+            else if (airportInsertion.ErrorCode != null)
                 return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airportInsertion.ErrorCode));
 
             return CreatedAtRoute("GetAirport", new { id = airport.Id }, airport);
@@ -89,6 +91,7 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
         public async Task<IActionResult> Update(string id, Airport airportIn)
         {
             Airport airport = new();
+            string returnMsg;
 
             var user = await SearchUser.ReturnUser(airportIn.LoginUser);
 
@@ -106,7 +109,10 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
             else if (airport == null)
                 return NotFound();
             else
-                _airportService.Update(id, airportIn);
+                returnMsg = await _airportService.Update(id, airportIn, user);
+
+            if (returnMsg != "ok")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
             return NoContent();
         }

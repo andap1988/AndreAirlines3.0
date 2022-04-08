@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>AndreAirlinesAPI3._0Log</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.15.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AndreAirlinesAPI3.0ErrorMessages\AndreAirlinesAPI3.0ErrorMessages.csproj" />
+    <ProjectReference Include="..\AndreAirlinesAPI3.0Models\AndreAirlinesAPI3.0Models.csproj" />
+  </ItemGroup>
+
+</Project>

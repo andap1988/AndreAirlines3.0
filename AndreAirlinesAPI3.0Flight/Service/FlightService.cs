@@ -1,6 +1,7 @@
 ﻿using AndreAirlinesAPI3._0Flight.Utils;
 using AndreAirlinesAPI3._0Models;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -121,11 +122,48 @@ namespace AndreAirlinesAPI3._0Flight.Service
             else
                 _flight.InsertOne(flight);
 
+            Log log = new();
+            log.User = user;
+            log.BeforeEntity = "";
+            log.AfterEntity = JsonConvert.SerializeObject(flight);
+            log.Operation = "create";
+            log.InsertionDate = DateTime.Now.Date;
+            log.ErrorCode = null;
+
+            var returnMsg = await PostLogService.InsertLog(log);
+
+            if (returnMsg != "ok")
+            {
+                _flight.DeleteOne(flightIn => flightIn.Id == flight.Id);
+                flight.ErrorCode = "noLog";
+
+                return flight;
+            }
+
             return flight;
         }
 
-        public void Update(string id, Flight flightIn) =>
+        public async Task<string> Update(string id, Flight flightIn, User user)
+        {
+            var flightBefore = Get(flightIn.Id);
+
             _flight.ReplaceOne(flight => flight.Id == id, flightIn);
+
+            Log log = new();
+            log.User = user;
+            log.BeforeEntity = JsonConvert.SerializeObject(flightBefore);
+            log.AfterEntity = JsonConvert.SerializeObject(flightIn);
+            log.Operation = "update";
+            log.InsertionDate = DateTime.Now.Date;
+            log.ErrorCode = null;
+
+            var returnMsg = await PostLogService.InsertLog(log);
+
+            if (returnMsg != "ok")
+                _flight.ReplaceOne(airport => airport.Id == id, flightBefore);
+
+            return returnMsg;
+        }
 
         public void Remove(Flight flightIn) =>
             _flight.DeleteOne(flight => flight.Id == flightIn.Id);

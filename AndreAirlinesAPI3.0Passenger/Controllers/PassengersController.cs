@@ -61,17 +61,19 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
 
             var passengerInsertion = await _passengerService.Create(passenger);
 
-            if (passengerInsertion.ErrorCode != null)
+            if (passengerInsertion.ErrorCode == "noLog")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
+            else if (passengerInsertion.ErrorCode != null)
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(passengerInsertion.ErrorCode));
-            else
-                return CreatedAtRoute("GetPassenger", new { id = passenger.Id }, passenger);
 
+            return CreatedAtRoute("GetPassenger", new { id = passenger.Id }, passenger);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, Passenger passengerIn)
         {
             Passenger passenger = new();
+            string returnMsg;
 
             var user = await SearchUser.ReturnUser(passengerIn.LoginUser);
 
@@ -89,7 +91,10 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
             else if (passenger == null)
                 return NotFound();
             else
-                _passengerService.Update(id, passengerIn);
+                returnMsg = await _passengerService.Update(id, passengerIn, user);
+
+            if (returnMsg != "ok")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
             return NoContent();
         }
