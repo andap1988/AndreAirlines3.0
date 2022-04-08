@@ -114,22 +114,34 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
-            return NoContent();
+            return Ok("Aeroporto atualizado com sucesso. Log gravado com sucesso.");
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        public async Task<IActionResult> Delete(string id, Airport airportIn)
         {
-            var airport = _airportService.Get(id);
+            Airport airport = new();
+            string returnMsg;
+
+            var user = await SearchUser.ReturnUser(airportIn.LoginUser);
+
+            if (user.LoginUser == null)
+                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage("noBlank"));
+            if (user.ErrorCode != null)
+                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(user.ErrorCode));
+            else if (user.Sector != "ADM")
+                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage("noPermited"));
+            else
+                airport = _airportService.Get(id);
 
             if (airport.ErrorCode != null)
                 return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
             else if (airport == null)
                 return NotFound();
             else
-                _airportService.Remove(airport.Id);
+                returnMsg = await _airportService.Remove(airport.Id, airport, user);
 
-            return NoContent();
+            return Ok("Aeroporto excluído com sucesso. Log gravado com sucesso.");
         }
     }
 }

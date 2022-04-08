@@ -88,22 +88,37 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
-            return NoContent();
+            return Ok("Preço base atualizado com sucesso. Log gravado com sucesso.");
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        public async Task<IActionResult> Delete(string id, BasePrice basePriceIn)
         {
-            var basePrice = _basePriceService.Get(id);
+            BasePrice basePrice = new();
+            string returnMsg;
+
+            var user = await SearchUser.ReturnUser(basePriceIn.LoginUser);
+
+            if (user.LoginUser == null)
+                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage("noBlank"));
+            if (user.ErrorCode != null)
+                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(user.ErrorCode));
+            else if (user.Sector != "ADM")
+                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage("noPermited"));
+            else
+                basePrice = _basePriceService.Get(id);
 
             if (basePrice.ErrorCode != null)
                 return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(basePrice.ErrorCode));
             else if (basePrice == null)
                 return NotFound();
             else
-                _basePriceService.Remove(basePrice.Id);
+                returnMsg = await _basePriceService.Remove(basePrice.Id, basePrice, user);
 
-            return NoContent();
+            if (returnMsg != "ok")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
+
+            return Ok("Preço base excluído com sucesso. Log gravado com sucesso.");
         }
     }
 }

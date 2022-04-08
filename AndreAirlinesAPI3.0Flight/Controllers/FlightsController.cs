@@ -72,7 +72,7 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
                 return BadRequest("Voo - " + ErrorMessage.ReturnMessage("noBlank"));
             if (user.ErrorCode != null)
                 return BadRequest("Voo - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM")
+            else if (user.Sector != "ADM" && user.Sector != "USER")
                 return BadRequest("Voo - " + ErrorMessage.ReturnMessage("noPermited"));
             else
                 flight = _flightService.Get(id);
@@ -87,22 +87,37 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
-            return NoContent();
+            return Ok("Voo atualizado com sucesso. Log gravado com sucesso.");
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        public async Task<IActionResult> Delete(string id, Flight flightIn)
         {
-            var flight = _flightService.Get(id);
+            Flight flight = new();
+            string returnMsg;
+
+            var user = await SearchUser.ReturnUser(flightIn.LoginUser);
+
+            if (user.LoginUser == null)
+                return BadRequest("Voo - " + ErrorMessage.ReturnMessage("noBlank"));
+            if (user.ErrorCode != null)
+                return BadRequest("Voo - " + ErrorMessage.ReturnMessage(user.ErrorCode));
+            else if (user.Sector != "ADM" && user.Sector != "USER")
+                return BadRequest("Voo - " + ErrorMessage.ReturnMessage("noPermited"));
+            else
+                flight = _flightService.Get(id);
 
             if (flight.ErrorCode != null)
                 return BadRequest("Voo - " + ErrorMessage.ReturnMessage(flight.ErrorCode));
             else if (flight == null)
                 return NotFound();
             else
-                _flightService.Remove(flight.Id);
+                returnMsg = await _flightService.Remove(flight.Id, flight, user);
 
-            return NoContent();
+            if (returnMsg != "ok")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
+
+            return Ok("Voo excluído com sucesso. Log gravado com sucesso.");
         }
     }
 }

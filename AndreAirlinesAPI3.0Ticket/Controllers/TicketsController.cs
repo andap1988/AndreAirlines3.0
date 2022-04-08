@@ -78,7 +78,7 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
                 return BadRequest("Reserva - " + ErrorMessage.ReturnMessage("noBlank"));
             if (user.ErrorCode != null)
                 return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM")
+            else if (user.Sector != "ADM" && user.Sector != "USER")
                 return BadRequest("Reserva - " + ErrorMessage.ReturnMessage("noPermited"));
             else
                 ticket = _ticketService.Get(id);
@@ -93,22 +93,37 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
-            return NoContent();
+            return Ok("Reserva atualizada com sucesso. Log gravado com sucesso.");
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        public async Task<IActionResult> Delete(string id, Ticket ticketIn)
         {
-            var ticket = _ticketService.Get(id);
+            Ticket ticket = new();
+            string returnMsg;
+
+            var user = await SearchUser.ReturnUser(ticketIn.LoginUser);
+
+            if (user.LoginUser == null)
+                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage("noBlank"));
+            if (user.ErrorCode != null)
+                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(user.ErrorCode));
+            else if (user.Sector != "ADM" && user.Sector != "USER")
+                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage("noPermited"));
+            else
+                ticket = _ticketService.Get(id);
 
             if (ticket.ErrorCode != null)
                 return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(ticket.ErrorCode));
             else if (ticket == null)
                 return NotFound();
             else
-                _ticketService.Remove(ticket.Id);
+                returnMsg = await _ticketService.Remove(ticket.Id, ticketIn, user);
 
-            return NoContent();
+            if (returnMsg != "ok")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
+
+            return Ok("Reserva excluída com sucesso. Log gravado com sucesso.");
         }
     }
 }

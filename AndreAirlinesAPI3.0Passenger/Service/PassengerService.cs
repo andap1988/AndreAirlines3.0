@@ -185,10 +185,26 @@ namespace AndreAirlinesAPI3._0Passenger.Service
             return returnMsg;
         }
 
-        public void Remove(Passenger passengerIn) =>
+        public async Task<string> Remove(string id, Passenger passengerIn, User user)
+        {
+            var passengerBefore = Get(passengerIn.Id);
+
             _passenger.DeleteOne(passenger => passenger.Id == passengerIn.Id);
 
-        public void Remove(string id) =>
-            _passenger.DeleteOne(passenger => passenger.Id == id);
+            Log log = new();
+            log.User = user;
+            log.BeforeEntity = JsonConvert.SerializeObject(passengerBefore);
+            log.AfterEntity = "";
+            log.Operation = "delete";
+            log.InsertionDate = DateTime.Now.Date;
+            log.ErrorCode = null;
+
+            var returnMsg = await PostLogService.InsertLog(log);
+
+            if (returnMsg != "ok")
+                _passenger.InsertOne(passengerBefore);
+
+            return returnMsg;
+        }
     }
 }

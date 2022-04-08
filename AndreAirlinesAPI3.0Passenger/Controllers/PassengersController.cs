@@ -81,7 +81,7 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noBlank"));
             if (user.ErrorCode != null)
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM")
+            else if (user.Sector != "ADM" && user.Sector != "USER")
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noPermited"));
             else
                 passenger = _passengerService.Get(id);
@@ -96,22 +96,37 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
-            return NoContent();
+            return Ok("Passageiro atualizado com sucesso. Log gravado com sucesso.");
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        public async Task<IActionResult> Delete(string id, Passenger passengerIn)
         {
-            var passenger = _passengerService.Get(id);
+            Passenger passenger = new();
+            string returnMsg;
+
+            var user = await SearchUser.ReturnUser(passengerIn.LoginUser);
+
+            if (user.LoginUser == null)
+                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noBlank"));
+            if (user.ErrorCode != null)
+                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(user.ErrorCode));
+            else if (user.Sector != "ADM" && user.Sector != "USER")
+                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noPermited"));
+            else
+                passenger = _passengerService.Get(id);
 
             if (passenger.ErrorCode != null)
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(passenger.ErrorCode));
             else if (passenger == null)
                 return NotFound();
             else
-                _passengerService.Remove(passenger.Id);
+                returnMsg = await _passengerService.Remove(passenger.Id, passengerIn, user);
 
-            return NoContent();
+            if (returnMsg != "ok")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
+
+            return Ok("Passageiro excluído com sucesso. Log gravado com sucesso.");
         }
     }
 }

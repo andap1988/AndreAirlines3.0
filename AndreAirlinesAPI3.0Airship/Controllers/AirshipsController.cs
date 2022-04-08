@@ -84,22 +84,37 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
-            return NoContent();
+            return Ok("Aeronave atualizada com sucesso. Log gravado com sucesso.");
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        public async Task<IActionResult> Delete(string id, Airship airshipIn)
         {
-            var airship = _airshipService.Get(id);
+            Airship airship = new();
+            string returnMsg;
+
+            var user = await SearchUser.ReturnUser(airshipIn.LoginUser);
+
+            if (user.LoginUser == null)
+                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage("noBlank"));
+            if (user.ErrorCode != null)
+                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(user.ErrorCode));
+            else if (user.Sector != "ADM")
+                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage("noPermited"));
+            else
+                airship = _airshipService.Get(id);
 
             if (airship.ErrorCode != null)
                 return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(airship.ErrorCode));
             else if (airship == null)
                 return NotFound();
             else
-                _airshipService.Remove(airship.Id);
+                returnMsg = await _airshipService.Remove(airship.Id, airship, user);
 
-            return NoContent();
+            if (returnMsg != "ok")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
+
+            return Ok("Aeronave excluído com sucesso. Log gravado com sucesso.");
         }
     }
 }

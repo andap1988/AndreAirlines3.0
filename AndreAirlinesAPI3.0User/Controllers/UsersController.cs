@@ -103,22 +103,30 @@ namespace AndreAirlinesAPI3._0User.Controllers
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
-            return NoContent();
+            return Ok("Usuário atualizado com sucesso. Log gravado com sucesso.");
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        public async Task<IActionResult> Delete(string id, User userIn)
         {
-            var user = _userService.Get(id);
+            User userLogin = new();
+            string returnMsg;
 
-            if (user.ErrorCode != null)
-                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user == null)
-                return NotFound();
+            userLogin = _userService.GetLoginUser(userIn.LoginUser);
+
+            if (userLogin.LoginUser == null)
+                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage("noBlank"));
+            else if (userLogin.ErrorCode != null)
+                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(userLogin.ErrorCode));
+            else if (userLogin.Sector != "ADM")
+                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage("noPermited"));
             else
-                _userService.Remove(user.Id);
+                returnMsg = await _userService.Remove(id, userIn, userLogin);
 
-            return NoContent();
+            if (returnMsg != "ok")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
+
+            return Ok("Usuário excluído com sucesso. Log gravado com sucesso.");
         }
     }
 }
