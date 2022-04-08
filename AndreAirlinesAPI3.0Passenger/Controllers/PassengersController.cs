@@ -51,7 +51,7 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
         {
             if (utilizationSearchZipcode)
             {
-                Address address = await SearchZipcode.ReturnZipcode(passenger.Address);
+                Address address = await SearchZipcode.ReturnAddress(passenger.Address);
 
                 if (address.ErrorCode != null)
                     return BadRequest("Endereço - " + ErrorMessage.ReturnMessage(address.ErrorCode));
@@ -59,7 +59,7 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
                     passenger.Address = address;
             }
 
-            var passengerInsertion = _passengerService.Create(passenger);
+            var passengerInsertion = await _passengerService.Create(passenger);
 
             if (passengerInsertion.ErrorCode != null)
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(passengerInsertion.ErrorCode));
@@ -69,9 +69,20 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(string id, Passenger passengerIn)
+        public async Task<IActionResult> Update(string id, Passenger passengerIn)
         {
-            var passenger = _passengerService.Get(id);
+            Passenger passenger = new();
+
+            var user = await SearchUser.ReturnUser(passengerIn.LoginUser);
+
+            if (user.LoginUser == null)
+                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noBlank"));
+            if (user.ErrorCode != null)
+                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(user.ErrorCode));
+            else if (user.Sector != "ADM")
+                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noPermited"));
+            else
+                passenger = _passengerService.Get(id);
 
             if (passenger.ErrorCode != null)
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(passenger.ErrorCode));

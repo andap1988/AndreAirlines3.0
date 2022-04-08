@@ -41,5 +41,18 @@ namespace AndreAirlinesAPI3._0Dapper.Controllers
 
             return airport;
         }
+
+        [HttpGet("code/{iatacode}")]
+        public ActionResult<AirportData> GetAiportData(string iatacode)
+        {
+            var airport = _airportRepository.GetAiportData(iatacode);
+
+            if (airport.ErrorCode != null)
+                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
+            else if (airport == null)
+                return NotFound();
+
+            return airport;
+        }
     }
 }

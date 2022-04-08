@@ -46,12 +46,25 @@ namespace AndreAirlinesAPI3._0User.Controllers
             return user;
         }
 
+        [HttpGet("loginUser/{loginUser}")]
+        public ActionResult<User> GetLoginUser(string loginUser)
+        {
+            var user = _userService.GetLoginUser(loginUser);
+
+            if (user.ErrorCode != null)
+                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(user.ErrorCode));
+            else if (user == null)
+                return NotFound();
+
+            return user;
+        }
+
         [HttpPost]
         public async Task<ActionResult<User>> Create(User user)
         {
             if (utilizationSearchZipcode)
             {
-                Address address = await SearchZipcode.ReturnZipcode(user.Address);
+                Address address = await SearchZipcode.ReturnAddress(user.Address);
 
                 if (address.ErrorCode != null)
                     return BadRequest("Endereço - " + ErrorMessage.ReturnMessage(address.ErrorCode));
@@ -71,12 +84,15 @@ namespace AndreAirlinesAPI3._0User.Controllers
         [HttpPut("{id}")]
         public IActionResult Update(string id, User userIn)
         {
-            var user = _userService.Get(id);
+            User userLogin = new();
+            userLogin = _userService.GetLoginUser(userIn.LoginUser);
 
-            if (user.ErrorCode != null)
-                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user == null)
-                return NotFound();
+            if (userLogin.LoginUser == null)
+                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage("noBlank"));
+            else if (userLogin.ErrorCode != null)
+                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(userLogin.ErrorCode));
+            else if (userLogin.Sector != "ADM")
+                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage("noPermited"));
             else
                 _userService.Update(id, userIn);
 

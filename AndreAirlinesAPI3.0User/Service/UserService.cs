@@ -68,6 +68,26 @@ namespace AndreAirlinesAPI3._0User.Service
             }
         }
 
+        public User GetLoginUser(string loginUser)
+        {
+            User user = new();
+            try
+            {
+                user = _user.Find<User>(user => user.LoginUser == loginUser).FirstOrDefault();
+
+                return user;
+            }
+            catch (Exception exception)
+            {
+                if (exception.InnerException != null)
+                    user.ErrorCode = exception.InnerException.Message;
+                else
+                    user.ErrorCode = exception.Message.ToString();
+
+                return user;
+            }
+        }
+
         public User GetCpf(string cpf)
         {
             User user = new();
@@ -91,6 +111,27 @@ namespace AndreAirlinesAPI3._0User.Service
 
         public User Create(User user)
         {
+            var userLogin = GetLoginUser(user.LoginUser);
+
+            if (userLogin == null)
+            {
+                user.ErrorCode = "noBlank";
+
+                return user;
+            }
+            else if (userLogin.ErrorCode != null)
+            {
+                user.ErrorCode = userLogin.ErrorCode;
+
+                return user;
+            }
+            else if (userLogin.Sector != "ADM")
+            {
+                user.ErrorCode = "noPermited";
+
+                return user;
+            }
+
             bool isValid = VerifyCpf.IsValidCpf(user.Cpf);
 
             if (!isValid)

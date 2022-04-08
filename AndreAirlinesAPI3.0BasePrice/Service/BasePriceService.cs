@@ -71,6 +71,13 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
 
         public async Task<BasePrice> Create(BasePrice basePrice)
         {
+            if (basePrice.LoginUser == null)
+            {
+                basePrice.ErrorCode = "noBlank";
+
+                return basePrice;
+            }
+
             var airportOrigin = await SearchAirport.ReturnAirport(basePrice.Origin);
 
             if (airportOrigin.ErrorCode != null)
@@ -93,7 +100,22 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
             else
                 basePrice.Destiny = airportDestiny;
 
-            _basePrice.InsertOne(basePrice);
+            var user = await SearchUser.ReturnUser(basePrice.LoginUser);
+
+            if (user.ErrorCode != null)
+            {
+                basePrice.ErrorCode = user.ErrorCode;
+
+                return basePrice;
+            }
+            else if (user.Sector != "ADM")
+            {
+                basePrice.ErrorCode = "noPermited";
+
+                return basePrice;
+            }
+            else
+                _basePrice.InsertOne(basePrice);
 
             return basePrice;
         }

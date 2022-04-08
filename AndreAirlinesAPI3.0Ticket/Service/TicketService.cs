@@ -71,6 +71,13 @@ namespace AndreAirlinesAPI3._0Ticket.Service
 
         public async Task<Ticket> Create(Ticket ticket)
         {
+            if (ticket.LoginUser == null)
+            {
+                ticket.ErrorCode = "noBlank";
+
+                return ticket;
+            }
+
             var flight = await SearchFlight.ReturnFlight(ticket.Flight);
 
             if (flight.ErrorCode != null)
@@ -114,6 +121,21 @@ namespace AndreAirlinesAPI3._0Ticket.Service
             }
             else
                 ticket.Class = classs;
+
+            var user = await SearchUser.ReturnUser(ticket.LoginUser);
+
+            if (user.ErrorCode != null)
+            {
+                ticket.ErrorCode = user.ErrorCode;
+
+                return ticket;
+            }
+            else if (user.Sector != "ADM" && user.Sector != "USER")
+            {
+                ticket.ErrorCode = "noPermited";
+
+                return ticket;
+            }
 
             var ticketWithPrice = PriceTicket.ReturnTicketWithPrice(ticket);
 

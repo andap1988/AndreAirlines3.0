@@ -47,14 +47,24 @@ namespace AndreAirlinesAPI3._0ErrorMessages
                 msg = "O passageiro informado já está cadastrado no sistema. Favor tentar novamente.";
             else if (errorCode == "yesAirport")
                 msg = "O aeroporto informado já está cadastrado no sistema. Favor tentar novamente.";
+            else if (errorCode == "yesUser")
+                msg = "O usuário informado já está cadastrado no sistema. Favor tentar novamente.";
+            else if (errorCode == "noPermited")
+                msg = "O usuário logado no sistema não tem permissão para realizar essa tarefa. Favor tentar novamente.";
+            else if (errorCode == "noBlank")
+                msg = "É necessário preencher os dados do usuário logado no sistema. Favor tentar novamente.";
+            else if (errorCode == "noPassport")
+                msg = "É necessário preencher os dados do passaporte. Favor tentar novamente.";
+            else if (errorCode == "noIataCode")
+                msg = "É necessário preencher o código internacional do aeroporto. Favor tentar novamente.";
+            else if (errorCode == "noLengthIataCode")
+                msg = "O código IATA é formando por apenas 03 caracteres. Favor tentar novamente.";
+            else if (errorCode == "InternalServerError")
+                msg = "Ocorreu um erro ao tentar verificar os dados internacionais do aeroporto. Favor tentar novamente.";            
             else if (errorCode.Contains("timeout"))
                 msg = "A API de consulta está fora do ar. Tente novamente em instantes.";
             else if (errorCode.Contains("noLength"))
                 msg = "Ao digitar o ID, é necessário conter 24 caracteres.";
-            else if (errorCode == "yesUser")
-                msg = "O usuário informado já está cadastrado no sistema. Favor tentar novamente.";
-            else if (errorCode == "noPermited")
-                msg = "O usuário informado não tem permissão para realizar essa tarefa. Favor tentar novamente.";
 
             return msg;
         }

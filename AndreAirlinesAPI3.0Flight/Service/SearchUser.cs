@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace AndreAirlinesAPI3._0Airship.Service
+namespace AndreAirlinesAPI3._0Flight.Service
 {
     public class SearchUser
     {
@@ -30,7 +30,6 @@ namespace AndreAirlinesAPI3._0Airship.Service
 
                     return user;
                 }
-
             }
             catch (HttpRequestException exception)
             {

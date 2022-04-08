@@ -48,6 +48,8 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
         {
             var basePriceInsertion = await _basePriceService.Create(basePrice);
 
+            if (basePriceInsertion.ErrorCode != null)
+                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(basePriceInsertion.ErrorCode));
             if (basePriceInsertion.Origin.ErrorCode != null)
                 return BadRequest("Aeroporto de Origem - " + ErrorMessage.ReturnMessage(basePriceInsertion.Origin.ErrorCode));
             else if (basePriceInsertion.Destiny.ErrorCode != null)
@@ -58,9 +60,20 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(string id, BasePrice basePriceIn)
+        public async Task<IActionResult> Update(string id, BasePrice basePriceIn)
         {
-            var basePrice = _basePriceService.Get(id);
+            BasePrice basePrice = new();
+
+            var user = await SearchUser.ReturnUser(basePriceIn.LoginUser);
+
+            if (user.LoginUser == null)
+                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage("noBlank"));
+            if (user.ErrorCode != null)
+                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(user.ErrorCode));
+            else if (user.Sector != "ADM")
+                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage("noPermited"));
+            else
+                basePrice = _basePriceService.Get(id);
 
             if (basePrice.ErrorCode != null)
                 return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(basePrice.ErrorCode));

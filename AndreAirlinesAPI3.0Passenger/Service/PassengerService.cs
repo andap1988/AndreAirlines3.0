@@ -3,6 +3,7 @@ using AndreAirlinesAPI3._0Passenger.Utils;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AndreAirlinesAPI3._0Passenger.Service
 {
@@ -89,8 +90,22 @@ namespace AndreAirlinesAPI3._0Passenger.Service
             }
         }            
 
-        public Passenger Create(Passenger passenger)
+        public async Task<Passenger> Create(Passenger passenger)
         {
+            if (passenger.LoginUser == null)
+            {
+                passenger.ErrorCode = "noBlank";
+
+                return passenger;
+            }
+
+            if (passenger.PassportCode == null)
+            {
+                passenger.ErrorCode = "noPassport";
+
+                return passenger;
+            }
+
             bool isValid = VerifyCpf.IsValidCpf(passenger.Cpf);
 
             if (!isValid)
@@ -109,7 +124,22 @@ namespace AndreAirlinesAPI3._0Passenger.Service
                 return passenger;
             }
 
-            _passenger.InsertOne(passenger);
+            var user = await SearchUser.ReturnUser(passenger.LoginUser);
+
+            if (user.ErrorCode != null)
+            {
+                passenger.ErrorCode = user.ErrorCode;
+
+                return passenger;
+            }
+            else if (user.Sector != "ADM" && user.Sector != "USER")
+            {
+                passenger.ErrorCode = "noPermited";
+
+                return passenger;
+            }
+            else
+                _passenger.InsertOne(passenger);
 
             return passenger;
         }

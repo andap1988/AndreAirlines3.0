@@ -104,7 +104,22 @@ namespace AndreAirlinesAPI3._0Flight.Service
             else
                 flight.Airship = airship;
 
-            _flight.InsertOne(flight);
+            var user = await SearchUser.ReturnUser(airship.LoginUser);
+
+            if (user.ErrorCode != null)
+            {
+                flight.ErrorCode = user.ErrorCode;
+
+                return flight;
+            }
+            else if (user.Sector != "ADM" && user.Sector != "USER")
+            {
+                flight.ErrorCode = "noPermited";
+
+                return flight;
+            }
+            else
+                _flight.InsertOne(flight);
 
             return flight;
         }

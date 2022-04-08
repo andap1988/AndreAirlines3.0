@@ -18,6 +18,7 @@ namespace AndreAirlinesAPI3._0Models
         public string State { get; set; }
         public int Number { get; set; }
         public string Complement { get; set; }
+        public string Continent { get; set; }
         public string ErrorCode { get; set; }
 
     }

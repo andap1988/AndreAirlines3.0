@@ -9,6 +9,6 @@ namespace AndreAirlinesAPI3._0Models
 {
     public class Passenger : Person
     {
-        public string PassaportCode { get; set; }
+        public string PassportCode { get; set; }
     }
 }

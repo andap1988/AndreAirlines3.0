@@ -60,9 +60,20 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(string id, Flight flightIn)
+        public async Task<IActionResult> Update(string id, Flight flightIn)
         {
-            var flight = _flightService.Get(id);
+            Flight flight = new();
+
+            var user = await SearchUser.ReturnUser(flightIn.LoginUser);
+
+            if (user.LoginUser == null)
+                return BadRequest("Voo - " + ErrorMessage.ReturnMessage("noBlank"));
+            if (user.ErrorCode != null)
+                return BadRequest("Voo - " + ErrorMessage.ReturnMessage(user.ErrorCode));
+            else if (user.Sector != "ADM")
+                return BadRequest("Voo - " + ErrorMessage.ReturnMessage("noPermited"));
+            else
+                flight = _flightService.Get(id);
 
             if (flight.ErrorCode != null)
                 return BadRequest("Voo - " + ErrorMessage.ReturnMessage(flight.ErrorCode));

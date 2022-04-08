@@ -8,5 +8,6 @@ namespace AndreAirlinesAPI3._0Dapper.Repository
         List<AirportData> GetAll();
 
         AirportData GetOne(int id);
+        AirportData GetAiportData(string iatacode);
     }
 }

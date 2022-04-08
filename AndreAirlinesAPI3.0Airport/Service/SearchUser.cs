@@ -7,14 +7,14 @@ namespace AndreAirlinesAPI3._0Airport.Service
 {
     public class SearchUser
     {
-        public static async Task<User> ReturnUser(string id)
+        public static async Task<User> ReturnUser(string loginUser)
         {
             HttpClient client = new HttpClient();
             User user = new();
 
             try
             {
-                HttpResponseMessage response = await client.GetAsync("https://localhost:44345/api/Users/" + id);
+                HttpResponseMessage response = await client.GetAsync("https://localhost:44345/api/Users/loginUser/" + loginUser);
                 response.EnsureSuccessStatusCode();
                 if (response.IsSuccessStatusCode)
                 {
@@ -30,7 +30,6 @@ namespace AndreAirlinesAPI3._0Airport.Service
 
                     return user;
                 }
-
             }
             catch (HttpRequestException exception)
             {

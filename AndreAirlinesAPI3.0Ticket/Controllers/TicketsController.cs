@@ -49,7 +49,9 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
         {
             var ticketInsertion = await _ticketService.Create(ticket);
 
-            if (ticketInsertion.Flight.ErrorCode != null)
+            if (ticketInsertion.ErrorCode != null)
+                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(ticketInsertion.Flight.ErrorCode));
+            else if (ticketInsertion.Flight.ErrorCode != null)
                 return BadRequest("Voo - " + ErrorMessage.ReturnMessage(ticketInsertion.Flight.ErrorCode));
             else if (ticketInsertion.Passenger.ErrorCode != null)
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(ticketInsertion.Passenger.ErrorCode));
@@ -63,9 +65,20 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(string id, Ticket ticketIn)
+        public async Task<IActionResult> Update(string id, Ticket ticketIn)
         {
-            var ticket = _ticketService.Get(id);
+            Ticket ticket = new();
+
+            var user = await SearchUser.ReturnUser(ticketIn.LoginUser);
+
+            if (user.LoginUser == null)
+                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage("noBlank"));
+            if (user.ErrorCode != null)
+                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(user.ErrorCode));
+            else if (user.Sector != "ADM")
+                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage("noPermited"));
+            else
+                ticket = _ticketService.Get(id);
 
             if (ticket.ErrorCode != null)
                 return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(ticket.ErrorCode));

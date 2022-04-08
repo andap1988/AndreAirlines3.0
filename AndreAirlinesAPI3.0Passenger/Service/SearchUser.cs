@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace AndreAirlinesAPI3._0Airship.Service
+namespace AndreAirlinesAPI3._0Passenger.Service
 {
     public class SearchUser
     {

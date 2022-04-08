@@ -8,7 +8,7 @@ namespace AndreAirlinesAPI3._0SearchZipcode
 {
     public class SearchZipcode
     {
-        public static async Task<Address> ReturnZipcode(Address addressIn)
+        public static async Task<Address> ReturnAddress(Address addressIn)
         {
             HttpClient client = new HttpClient();
             Address address = new();
@@ -31,6 +31,7 @@ namespace AndreAirlinesAPI3._0SearchZipcode
                     address.State = viaCEP.State;
                     address.Number = addressIn.Number;
                     address.Complement = viaCEP.Complement;
+                    address.Continent = "South America";
                     address.ErrorCode = null;
 
                     return address;

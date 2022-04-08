@@ -3,6 +3,7 @@ using AndreAirlinesAPI3._0Models;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AndreAirlinesAPI3._0Airship.Service
 {
@@ -89,12 +90,18 @@ namespace AndreAirlinesAPI3._0Airship.Service
             }
         }
 
-
-        public Airship Create(Airship airship)
+        public async Task<Airship> Create(Airship airship)
         {
+            if (airship.LoginUser == null)
+            {
+                airship.ErrorCode = "noBlank";
+
+                return airship;
+            }
+
             var searchAirship = GetRegistration(airship.Registration);
 
-            if (searchAirship.ErrorCode != null)
+            if (searchAirship != null && searchAirship.ErrorCode != null)
             {
                 airship.ErrorCode = searchAirship.ErrorCode;
 
@@ -107,7 +114,22 @@ namespace AndreAirlinesAPI3._0Airship.Service
                 return airship;
             }
 
-            _airship.InsertOne(airship);
+            var user = await SearchUser.ReturnUser(airship.LoginUser);
+
+            if (user.ErrorCode != null)
+            {
+                airship.ErrorCode = user.ErrorCode;
+
+                return airship;
+            }
+            else if (user.Sector != "ADM")
+            {
+                airship.ErrorCode = "noPermited";
+
+                return airship;
+            }
+            else
+                _airship.InsertOne(airship);
 
             return airship;
         }

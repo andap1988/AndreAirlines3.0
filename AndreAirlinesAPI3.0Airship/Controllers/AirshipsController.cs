@@ -45,21 +45,31 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Airship> Create(Airship airship)
+        public async Task<ActionResult<Airship>> Create(Airship airship)
         {
-            var airshipInsertion = _airshipService.Create(airship);
+            var airshipInsertion = await _airshipService.Create(airship);
 
             if (airshipInsertion.ErrorCode != null)
                 return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(airshipInsertion.ErrorCode));
 
             return CreatedAtRoute("GetAirship", new { id = airship.Id }, airship);
-
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(string id, Airship airshipIn)
+        public async Task<IActionResult> Update(string id, Airship airshipIn)
         {
-            var airship = _airshipService.Get(id);
+            Airship airship = new();
+
+            var user = await SearchUser.ReturnUser(airshipIn.LoginUser);
+
+            if (user.LoginUser == null)
+                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage("noBlank"));
+            if (user.ErrorCode != null)
+                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(user.ErrorCode));
+            else if (user.Sector != "ADM")
+                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage("noPermited"));
+            else
+                airship = _airshipService.Get(id);
 
             if (airship.ErrorCode != null)
                 return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(airship.ErrorCode));

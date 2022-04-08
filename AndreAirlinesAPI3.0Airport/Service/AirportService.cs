@@ -92,6 +92,14 @@ namespace AndreAirlinesAPI3._0Airport.Service
 
         public async Task<Airport> Create(Airport airport)
         {
+            if (airport.LoginUser == null)
+            {
+                airport.ErrorCode = "noBlank";
+
+                return airport;
+            }
+
+            /*
             var searchAirport = GetIataCode(airport.IataCode);
 
             if (searchAirport != null && searchAirport.ErrorCode != null)
@@ -106,12 +114,13 @@ namespace AndreAirlinesAPI3._0Airport.Service
 
                 return airport;
             }
+            */
 
             var user = await SearchUser.ReturnUser(airport.LoginUser);
 
             if (user.ErrorCode != null)
             {
-                airport.LoginUser = user.ErrorCode;
+                airport.ErrorCode = user.ErrorCode;
 
                 return airport;
             }

@@ -67,5 +67,30 @@ namespace AndreAirlinesAPI3._0Dapper.Repository
                 return aiportsData;
             }
         }
+
+        public AirportData GetAiportData(string iatacode)
+        {
+            AirportData airportData = new();
+
+            try
+            {
+                using (var conn = _context.CreateConnection())
+                {
+                    conn.Open();
+                    var airport = conn.QueryFirstOrDefault<AirportData>($"SELECT Id, City, Country, Code, Continent FROM Airport WHERE Code = '{iatacode.ToUpper()}'");
+
+                    return airport;
+                }
+            }
+            catch (Exception exception)
+            {
+                if (exception.InnerException != null)
+                    airportData.ErrorCode = exception.InnerException.Message;
+                else
+                    airportData.ErrorCode = exception.Message.ToString();
+
+                return airportData;
+            }
+        }
     }
 }
