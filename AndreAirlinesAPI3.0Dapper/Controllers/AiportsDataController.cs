@@ -34,10 +34,10 @@ namespace AndreAirlinesAPI3._0Dapper.Controllers
         {
             var airport = _airportRepository.GetOne(id);
 
-            if (airport.ErrorCode != null)
-                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
-            else if (airport == null)
+            if (airport == null)
                 return NotFound();
+            else if (airport.ErrorCode != null)
+                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
 
             return airport;
         }
@@ -47,10 +47,10 @@ namespace AndreAirlinesAPI3._0Dapper.Controllers
         {
             var airport = _airportRepository.GetAiportData(iatacode);
 
-            if (airport.ErrorCode != null)
-                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
-            else if (airport == null)
+            if (airport == null)
                 return NotFound();
+            else if (airport.ErrorCode != null)
+                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
 
             return airport;
         }

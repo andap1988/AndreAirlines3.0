@@ -7,14 +7,20 @@ namespace AndreAirlinesAPI3._0Ticket.Service
 {
     public class SearchPassenger
     {
-        public static async Task<Passenger> ReturnPassenger(Passenger passengerIn)
+        public static async Task<Passenger> ReturnPassenger(Passenger passengerIn, bool isCpf)
         {
             HttpClient client = new HttpClient();
             Passenger passenger = new();
+            string composeLink;
+
+            if (isCpf)
+                composeLink = "Passengers/cpf/" + passengerIn.Cpf;
+            else
+                composeLink = "Passengers/" + passengerIn.Id;
 
             try
             {
-                HttpResponseMessage response = await client.GetAsync("https://localhost:44338/api/Passengers/" + passengerIn.Id);
+                HttpResponseMessage response = await client.GetAsync("https://localhost:44338/api/" + composeLink);
                 response.EnsureSuccessStatusCode();
                 if (response.IsSuccessStatusCode)
                 {

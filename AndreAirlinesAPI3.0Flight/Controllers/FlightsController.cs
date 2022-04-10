@@ -35,10 +35,10 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
         {
             var flight = _flightService.Get(id);
 
-            if (flight.ErrorCode != null)
-                return BadRequest("Voo - " + ErrorMessage.ReturnMessage(flight.ErrorCode));
-            else if (flight == null)
+            if (flight == null)
                 return NotFound();
+            else if (flight.ErrorCode != null)
+                return BadRequest("Voo - " + ErrorMessage.ReturnMessage(flight.ErrorCode));
 
             return flight;
         }
@@ -77,10 +77,10 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
             else
                 flight = _flightService.Get(id);
 
-            if (flight.ErrorCode != null)
-                return BadRequest("Voo - " + ErrorMessage.ReturnMessage(flight.ErrorCode));
-            else if (flight == null)
+            if (flight == null)
                 return NotFound();
+            else if (flight.ErrorCode != null)
+                return BadRequest("Voo - " + ErrorMessage.ReturnMessage(flight.ErrorCode));
             else
                 returnMsg = await _flightService.Update(id, flightIn, user);
 
@@ -107,10 +107,10 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
             else
                 flight = _flightService.Get(id);
 
-            if (flight.ErrorCode != null)
-                return BadRequest("Voo - " + ErrorMessage.ReturnMessage(flight.ErrorCode));
-            else if (flight == null)
+            if (flight == null)
                 return NotFound();
+            else if (flight.ErrorCode != null)
+                return BadRequest("Voo - " + ErrorMessage.ReturnMessage(flight.ErrorCode));
             else
                 returnMsg = await _flightService.Remove(flight.Id, flight, user);
 

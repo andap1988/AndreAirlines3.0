@@ -35,10 +35,10 @@ namespace AndreAirlinesAPI3._0Log.Controllers
         {
             var airport = _logService.Get(id);
 
-            if (airport.ErrorCode != null)
-                return BadRequest("Log - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
-            else if (airport == null)
+            if (airport == null)
                 return NotFound();
+            else if (airport.ErrorCode != null)
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
 
             return airport;
         }

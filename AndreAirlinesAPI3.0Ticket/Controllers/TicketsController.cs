@@ -36,10 +36,10 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
         {
             var ticket = _ticketService.Get(id);
 
-            if (ticket.ErrorCode != null)
-                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(ticket.ErrorCode));
-            else if (ticket == null)
+            if (ticket == null)
                 return NotFound();
+            else if (ticket.ErrorCode != null)
+                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(ticket.ErrorCode));
 
             return ticket;
         }
@@ -83,10 +83,10 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
             else
                 ticket = _ticketService.Get(id);
 
-            if (ticket.ErrorCode != null)
-                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(ticket.ErrorCode));
-            else if (ticket == null)
+            if (ticket == null)
                 return NotFound();
+            else if (ticket.ErrorCode != null)
+                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(ticket.ErrorCode));
             else
                 returnMsg = await _ticketService.Update(id, ticketIn, user);
 
@@ -113,10 +113,10 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
             else
                 ticket = _ticketService.Get(id);
 
-            if (ticket.ErrorCode != null)
-                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(ticket.ErrorCode));
-            else if (ticket == null)
+            if (ticket == null)
                 return NotFound();
+            else if (ticket.ErrorCode != null)
+                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(ticket.ErrorCode));
             else
                 returnMsg = await _ticketService.Remove(ticket.Id, ticketIn, user);
 

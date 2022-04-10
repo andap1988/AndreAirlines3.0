@@ -36,10 +36,23 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
         {
             var airship = _airshipService.Get(id);
 
-            if (airship.ErrorCode != null)
-                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(airship.ErrorCode));
-            else if (airship == null)
+            if (airship == null)
                 return NotFound();
+            else if (airship.ErrorCode != null)
+                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(airship.ErrorCode));
+
+            return airship;
+        }
+
+        [HttpGet("registration/{registration}")]
+        public ActionResult<Airship> GetRegistration(string registration)
+        {
+            var airship = _airshipService.GetRegistration(registration.ToUpper());
+
+            if (airship == null)
+                return NotFound();
+            else if (airship.ErrorCode != null)
+                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airship.ErrorCode));
 
             return airship;
         }
@@ -74,10 +87,10 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
             else
                 airship = _airshipService.Get(id);
 
-            if (airship.ErrorCode != null)
-                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(airship.ErrorCode));
-            else if (airship == null)
+            if (airship == null)
                 return NotFound();
+            else if (airship.ErrorCode != null)
+                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(airship.ErrorCode));
             else
                 returnMsg = await _airshipService.Update(id, airshipIn, user);
 
@@ -104,10 +117,10 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
             else
                 airship = _airshipService.Get(id);
 
-            if (airship.ErrorCode != null)
-                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(airship.ErrorCode));
-            else if (airship == null)
+            if (airship == null)
                 return NotFound();
+            else if (airship.ErrorCode != null)
+                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(airship.ErrorCode));
             else
                 returnMsg = await _airshipService.Remove(airship.Id, airship, user);
 

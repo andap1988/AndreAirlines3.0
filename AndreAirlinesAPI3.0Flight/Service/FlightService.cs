@@ -72,7 +72,14 @@ namespace AndreAirlinesAPI3._0Flight.Service
 
         public async Task<Flight> Create(Flight flight)
         {
-            var airportOrigin = await SearchAirport.ReturnAirport(flight.Origin);
+            bool isIataCode = false;
+            bool isRegistration = false;
+
+            if (flight.Origin.IataCode != null)
+                isIataCode = true;
+
+            var airportOrigin = await SearchAirport.ReturnAirport(flight.Origin, isIataCode);
+            isIataCode = false;
 
             if (airportOrigin.ErrorCode != null)
             {
@@ -83,7 +90,10 @@ namespace AndreAirlinesAPI3._0Flight.Service
             else
                 flight.Origin = airportOrigin;
 
-            var airportDestiny = await SearchAirport.ReturnAirport(flight.Destiny);
+            if (flight.Origin.IataCode != null)
+                isIataCode = true;
+
+            var airportDestiny = await SearchAirport.ReturnAirport(flight.Destiny, isIataCode);
 
             if (airportDestiny.ErrorCode != null)
             {
@@ -94,7 +104,10 @@ namespace AndreAirlinesAPI3._0Flight.Service
             else
                 flight.Destiny = airportDestiny;
 
-            var airship = await SearchAirship.ReturnAirship(flight.Airship);
+            if (flight.Airship.Registration != null)
+                isRegistration = true;
+
+            var airship = await SearchAirship.ReturnAirship(flight.Airship, isRegistration);
 
             if (airship.ErrorCode != null)
             {

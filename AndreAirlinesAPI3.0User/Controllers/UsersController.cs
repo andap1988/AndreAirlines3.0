@@ -38,10 +38,10 @@ namespace AndreAirlinesAPI3._0User.Controllers
         {
             var user = _userService.Get(id);
 
-            if (user.ErrorCode != null)
-                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user == null)
+            if (user == null)
                 return NotFound();
+            else if (user.ErrorCode != null)
+                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(user.ErrorCode));
 
             return user;
         }
@@ -51,10 +51,10 @@ namespace AndreAirlinesAPI3._0User.Controllers
         {
             var user = _userService.GetLoginUser(loginUser);
 
-            if (user.ErrorCode != null)
-                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user == null)
+            if (user == null)
                 return NotFound();
+            else if (user.ErrorCode != null)
+                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(user.ErrorCode));
 
             return user;
         }

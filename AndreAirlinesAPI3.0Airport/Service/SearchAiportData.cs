@@ -14,7 +14,7 @@ namespace AndreAirlinesAPI3._0Airport.Service
 
             try
             {
-                HttpResponseMessage response = await client.GetAsync("https://localhost:44371/api/AiportsData/code/" + iataCode);
+                HttpResponseMessage response = await client.GetAsync("https://localhost:44310/api/AiportsData/code/" + iataCode);
                 response.EnsureSuccessStatusCode();
                 if (response.IsSuccessStatusCode)
                 {

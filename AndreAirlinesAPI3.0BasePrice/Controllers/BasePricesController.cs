@@ -35,10 +35,10 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
         {
             var baseprice = _basePriceService.Get(id);
 
-            if (baseprice.ErrorCode != null)
-                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(baseprice.ErrorCode));
-            else if (baseprice == null)
+            if (baseprice == null)
                 return NotFound();
+            else if (baseprice.ErrorCode != null)
+                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(baseprice.ErrorCode));
 
             return baseprice;
         }
@@ -78,10 +78,10 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
             else
                 basePrice = _basePriceService.Get(id);
 
-            if (basePrice.ErrorCode != null)
-                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(basePrice.ErrorCode));
-            else if (basePrice == null)
+            if (basePrice == null)
                 return NotFound();
+            else if (basePrice.ErrorCode != null)
+                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(basePrice.ErrorCode));
             else
                 returnMsg = await _basePriceService.Update(id, basePriceIn, user);
 
@@ -108,10 +108,10 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
             else
                 basePrice = _basePriceService.Get(id);
 
-            if (basePrice.ErrorCode != null)
-                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(basePrice.ErrorCode));
-            else if (basePrice == null)
+            if (basePrice == null)
                 return NotFound();
+            else if (basePrice.ErrorCode != null)
+                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(basePrice.ErrorCode));
             else
                 returnMsg = await _basePriceService.Remove(basePrice.Id, basePrice, user);
 

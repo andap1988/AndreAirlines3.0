@@ -7,14 +7,21 @@ namespace AndreAirlinesAPI3._0Flight.Service
 {
     public class SearchAirship
     {
-        public static async Task<Airship> ReturnAirship(Airship airshipIn)
+        public static async Task<Airship> ReturnAirship(Airship airshipIn, bool isRegistration)
         {
             HttpClient client = new HttpClient();
             Airship airship = new();
+            string composeLink;
+
+            if (isRegistration)
+                composeLink = "Airships/registration/" + airshipIn.Registration;
+            else
+                composeLink = "Airships/" + airshipIn.Id;
 
             try
             {
-                HttpResponseMessage response = await client.GetAsync("https://localhost:44389/api/Airships/" + airshipIn.Id);
+                //https://localhost:44389/api/Airships/registration/E195
+                HttpResponseMessage response = await client.GetAsync("https://localhost:44389/api/" + composeLink);
                 response.EnsureSuccessStatusCode();
                 if (response.IsSuccessStatusCode)
                 {

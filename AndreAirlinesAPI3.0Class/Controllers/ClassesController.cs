@@ -35,10 +35,10 @@ namespace AndreAirlinesAPI3._0Class.Controllers
         {
             var classs = _classService.Get(id);
 
-            if (classs.ErrorCode != null)
-                return BadRequest("Classe - " + ErrorMessage.ReturnMessage(classs.ErrorCode));
-            else if (classs == null)
+            if (classs == null)
                 return NotFound();
+            else if (classs.ErrorCode != null)
+                return BadRequest("Classe - " + ErrorMessage.ReturnMessage(classs.ErrorCode));
 
             return classs;
         }
@@ -60,10 +60,10 @@ namespace AndreAirlinesAPI3._0Class.Controllers
         {
             var classs = _classService.Get(id);
 
-            if (classs.ErrorCode != null)
-                return BadRequest("Classe - " + ErrorMessage.ReturnMessage(classs.ErrorCode));
-            else if (classs == null)
+            if (classs == null)
                 return NotFound();
+            else if (classs.ErrorCode != null)
+                return BadRequest("Classe - " + ErrorMessage.ReturnMessage(classs.ErrorCode));
             else
                 _classService.Update(id, classIn);
 
@@ -75,10 +75,10 @@ namespace AndreAirlinesAPI3._0Class.Controllers
         {
             var classs = _classService.Get(id);
 
-            if (classs.ErrorCode != null)
-                return BadRequest("Classe - " + ErrorMessage.ReturnMessage(classs.ErrorCode));
-            else if (classs == null)
+            if (classs == null)
                 return NotFound();
+            else if (classs.ErrorCode != null)
+                return BadRequest("Classe - " + ErrorMessage.ReturnMessage(classs.ErrorCode));
             else
                 _classService.Remove(classs.Id);
 

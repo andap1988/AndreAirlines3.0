@@ -72,6 +72,8 @@ namespace AndreAirlinesAPI3._0Ticket.Service
 
         public async Task<Ticket> Create(Ticket ticket)
         {
+            bool isCpf = false;
+
             if (ticket.LoginUser == null)
             {
                 ticket.ErrorCode = "noBlank";
@@ -90,7 +92,10 @@ namespace AndreAirlinesAPI3._0Ticket.Service
             else
                 ticket.Flight = flight;
 
-            var passenger = await SearchPassenger.ReturnPassenger(ticket.Passenger);
+            if (ticket.Passenger.Cpf != null)
+                isCpf = true;
+
+            var passenger = await SearchPassenger.ReturnPassenger(ticket.Passenger, isCpf);
 
             if (passenger.ErrorCode != null)
             {

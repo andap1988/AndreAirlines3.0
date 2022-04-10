@@ -37,10 +37,23 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
         {
             var airport = _airportService.Get(id);
 
-            if (airport.ErrorCode != null)
-                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
-            else if (airport == null)
+            if (airport == null)
                 return NotFound();
+            else if (airport.ErrorCode != null)
+                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
+
+            return airport;
+        }
+
+        [HttpGet("code/{iataCode}")]
+        public ActionResult<Airport> GetIataCode(string iataCode)
+        {
+            var airport = _airportService.GetIataCode(iataCode.ToUpper());
+
+            if (airport == null)
+                return NotFound();
+            else if (airport.ErrorCode != null)
+                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
 
             return airport;
         }
@@ -134,10 +147,10 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
             else
                 airport = _airportService.Get(id);
 
-            if (airport.ErrorCode != null)
-                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
-            else if (airport == null)
+            if (airport == null)
                 return NotFound();
+            else if (airport.ErrorCode != null)
+                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
             else
                 returnMsg = await _airportService.Remove(airport.Id, airport, user);
 

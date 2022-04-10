@@ -113,7 +113,14 @@ namespace AndreAirlinesAPI3._0User.Service
 
         public async Task<User> Create(User user)
         {
-            var userLogin = GetLoginUser(user.LoginUser);
+            User userLogin = new();
+
+            var usersLogin = Get();
+
+            if (usersLogin.Count < 1 && user.Sector == "ADM")
+                userLogin = user;
+            else
+                userLogin = GetLoginUser(user.LoginUser);
 
             if (userLogin == null)
             {

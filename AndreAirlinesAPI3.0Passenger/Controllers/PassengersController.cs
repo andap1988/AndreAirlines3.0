@@ -38,10 +38,23 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
         {
             var passenger = _passengerService.Get(id);
 
-            if (passenger.ErrorCode != null)
-                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(passenger.ErrorCode));
-            else if (passenger == null)
+            if (passenger == null)
                 return NotFound();
+            else if (passenger.ErrorCode != null)
+                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(passenger.ErrorCode));
+
+            return passenger;
+        }
+
+        [HttpGet("cpf/{cpf}")]
+        public ActionResult<Passenger> GetCpf(string cpf)
+        {
+            var passenger = _passengerService.GetCpf(cpf.Replace(".", "").Replace("-", ""));
+
+            if (passenger == null)
+                return NotFound();
+            else if (passenger.ErrorCode != null)
+                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(passenger.ErrorCode));
 
             return passenger;
         }
@@ -58,6 +71,8 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
                 else
                     passenger.Address = address;
             }
+
+            passenger.Cpf = passenger.Cpf.Replace(".", "").Replace("-", "");
 
             var passengerInsertion = await _passengerService.Create(passenger);
 
@@ -86,10 +101,10 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
             else
                 passenger = _passengerService.Get(id);
 
-            if (passenger.ErrorCode != null)
-                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(passenger.ErrorCode));
-            else if (passenger == null)
+            if (passenger == null)
                 return NotFound();
+            else if (passenger.ErrorCode != null)
+                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(passenger.ErrorCode));
             else
                 returnMsg = await _passengerService.Update(id, passengerIn, user);
 
@@ -116,10 +131,10 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
             else
                 passenger = _passengerService.Get(id);
 
-            if (passenger.ErrorCode != null)
-                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(passenger.ErrorCode));
-            else if (passenger == null)
+            if (passenger == null)
                 return NotFound();
+            else if (passenger.ErrorCode != null)
+                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(passenger.ErrorCode));
             else
                 returnMsg = await _passengerService.Remove(passenger.Id, passengerIn, user);
 

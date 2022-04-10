@@ -72,6 +72,8 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
 
         public async Task<BasePrice> Create(BasePrice basePrice)
         {
+            bool isIataCode = false;
+
             if (basePrice.LoginUser == null)
             {
                 basePrice.ErrorCode = "noBlank";
@@ -79,7 +81,11 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
                 return basePrice;
             }
 
-            var airportOrigin = await SearchAirport.ReturnAirport(basePrice.Origin);
+            if (basePrice.Origin.IataCode != null)
+                isIataCode = true;
+
+            var airportOrigin = await SearchAirport.ReturnAirport(basePrice.Origin, isIataCode);
+            isIataCode = false;
 
             if (airportOrigin.ErrorCode != null)
             {
@@ -90,7 +96,10 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
             else
                 basePrice.Origin = airportOrigin;
 
-            var airportDestiny = await SearchAirport.ReturnAirport(basePrice.Destiny);
+            if (basePrice.Destiny.IataCode != null)
+                isIataCode = true;
+
+            var airportDestiny = await SearchAirport.ReturnAirport(basePrice.Destiny, isIataCode);
 
             if (airportDestiny.ErrorCode != null)
             {
