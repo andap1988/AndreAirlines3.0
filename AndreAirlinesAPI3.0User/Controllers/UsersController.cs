@@ -2,6 +2,7 @@
 using AndreAirlinesAPI3._0Models;
 using AndreAirlinesAPI3._0SearchZipcode;
 using AndreAirlinesAPI3._0User.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -20,8 +21,52 @@ namespace AndreAirlinesAPI3._0User.Controllers
         {
             _userService = userService;
         }
+        
+        [HttpPost]
+        [Route("login")]
+        [AllowAnonymous]
+        public async Task<ActionResult<dynamic>> Authenticate([FromBody] User userIn)
+        {
+            List<User> users = _userService.Get();
+            User searchUser = new();
+
+            users.ForEach(user =>
+            {
+                if (userIn.Login == user.Login && userIn.Password == user.Password)
+                    searchUser = user;
+            });
+
+            if (searchUser == null)
+                return NotFound("Usuário - " + ErrorMessage.ReturnMessage("noUser"));
+
+            var token = TokenService.GenerateToken(searchUser);
+
+            searchUser.Password = "";
+
+            return new
+            {
+                user = searchUser,
+                token = token
+            };
+        }
+
+        [HttpPost]
+        [Route("userlogin")]
+        [AllowAnonymous]
+        public ActionResult<User> GetUserLogin(User userIn)
+        {
+            var user = _userService.GetUserLogin(userIn);
+
+            if (user == null)
+                return NotFound();
+            else if (user.ErrorCode != null)
+                return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(user.ErrorCode));
+
+            return user;
+        }
 
         [HttpGet]
+        [AllowAnonymous]
         public ActionResult<List<User>> Get()
         {
             var users = _userService.Get();
@@ -60,6 +105,7 @@ namespace AndreAirlinesAPI3._0User.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "adm")]
         public async Task<ActionResult<User>> Create(User user)
         {
             if (utilizationSearchZipcode)
@@ -95,7 +141,7 @@ namespace AndreAirlinesAPI3._0User.Controllers
                 return BadRequest("Usuário - " + ErrorMessage.ReturnMessage("noBlank"));
             else if (userLogin.ErrorCode != null)
                 return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(userLogin.ErrorCode));
-            else if (userLogin.Sector != "ADM")
+            else if (userLogin.Role != "ADM")
                 return BadRequest("Usuário - " + ErrorMessage.ReturnMessage("noPermited"));
             else
                 returnMsg = await _userService.Update(id, userIn, userLogin);
@@ -118,7 +164,7 @@ namespace AndreAirlinesAPI3._0User.Controllers
                 return BadRequest("Usuário - " + ErrorMessage.ReturnMessage("noBlank"));
             else if (userLogin.ErrorCode != null)
                 return BadRequest("Usuário - " + ErrorMessage.ReturnMessage(userLogin.ErrorCode));
-            else if (userLogin.Sector != "ADM")
+            else if (userLogin.Role != "ADM")
                 return BadRequest("Usuário - " + ErrorMessage.ReturnMessage("noPermited"));
             else
                 returnMsg = await _userService.Remove(id, userIn, userLogin);

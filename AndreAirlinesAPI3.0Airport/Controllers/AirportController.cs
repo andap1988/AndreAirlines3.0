@@ -112,7 +112,7 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
                 return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage("noBlank"));
             if (user.ErrorCode != null)
                 return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM")
+            else if (user.Role != "ADM")
                 return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage("noPermited"));
             else
                 airport = _airportService.Get(id);
@@ -142,7 +142,7 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
                 return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage("noBlank"));
             if (user.ErrorCode != null)
                 return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM")
+            else if (user.Role != "ADM")
                 return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage("noPermited"));
             else
                 airport = _airportService.Get(id);

@@ -2,6 +2,7 @@
 using AndreAirlinesAPI3._0Models;
 using AndreAirlinesAPI3._0Passenger.Service;
 using AndreAirlinesAPI3._0SearchZipcode;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -19,6 +20,27 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
         public PassengersController(PassengerService passengerService)
         {
             _passengerService = passengerService;
+        }
+
+        [HttpPost]
+        [Route("login")]
+        [AllowAnonymous]
+        public async Task<ActionResult<dynamic>> Authenticate([FromBody] User userIn)
+        {
+            User searchUser = await SearchUser.ReturnUserLogin(userIn);
+
+            if (searchUser == null || searchUser.ErrorCode != null)
+                return NotFound("Usuário - " + ErrorMessage.ReturnMessage("noUser"));
+
+            var token = TokenService.GenerateToken(searchUser);
+
+            searchUser.Password = "";
+
+            return new
+            {
+                user = searchUser,
+                token = token
+            };
         }
 
         [HttpGet]
@@ -60,8 +82,11 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "adm,user")]
         public async Task<ActionResult<Passenger>> Create(Passenger passenger)
         {
+            var user = User.Identity.Name;
+
             if (utilizationSearchZipcode)
             {
                 Address address = await SearchZipcode.ReturnAddress(passenger.Address);
@@ -74,7 +99,7 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
 
             passenger.Cpf = passenger.Cpf.Replace(".", "").Replace("-", "");
 
-            var passengerInsertion = await _passengerService.Create(passenger);
+            var passengerInsertion = await _passengerService.Create(passenger, user);
 
             if (passengerInsertion.ErrorCode == "noLog")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -85,6 +110,7 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "adm,user")]
         public async Task<IActionResult> Update(string id, Passenger passengerIn)
         {
             Passenger passenger = new();
@@ -96,7 +122,7 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noBlank"));
             if (user.ErrorCode != null)
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM" && user.Sector != "USER")
+            else if (user.Role != "ADM" && user.Role != "USER")
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noPermited"));
             else
                 passenger = _passengerService.Get(id);
@@ -115,6 +141,7 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "adm,user")]
         public async Task<IActionResult> Delete(string id, Passenger passengerIn)
         {
             Passenger passenger = new();
@@ -126,7 +153,7 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noBlank"));
             if (user.ErrorCode != null)
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM" && user.Sector != "USER")
+            else if (user.Role != "ADM" && user.Role != "USER")
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noPermited"));
             else
                 passenger = _passengerService.Get(id);

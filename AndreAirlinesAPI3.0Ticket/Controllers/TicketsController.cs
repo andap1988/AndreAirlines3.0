@@ -1,6 +1,7 @@
 ﻿using AndreAirlinesAPI3._0ErrorMessages;
 using AndreAirlinesAPI3._0Models;
 using AndreAirlinesAPI3._0Ticket.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -19,6 +20,27 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
             _ticketService = ticketService;
         }
 
+        [HttpPost]
+        [Route("login")]
+        [AllowAnonymous]
+        public async Task<ActionResult<dynamic>> Authenticate([FromBody] User userIn)
+        {
+            User searchUser = await SearchUser.ReturnUserLogin(userIn);
+
+            if (searchUser == null || searchUser.ErrorCode != null)
+                return NotFound("Usuário - " + ErrorMessage.ReturnMessage("noUser"));
+
+            var token = TokenService.GenerateToken(searchUser);
+
+            searchUser.Password = "";
+
+            return new
+            {
+                user = searchUser,
+                token = token
+            };
+        }
+
         [HttpGet]
         public ActionResult<List<Ticket>> Get()
         {
@@ -29,7 +51,7 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
 
             return tickets;
         }
-            
+
 
         [HttpGet("{id}", Name = "GetTicket")]
         public ActionResult<Ticket> Get(string id)
@@ -45,9 +67,11 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "adm,user")]
         public async Task<ActionResult<Ticket>> Create(Ticket ticket)
         {
-            var ticketInsertion = await _ticketService.Create(ticket);
+            var user = User.Identity.Name;
+            var ticketInsertion = await _ticketService.Create(ticket, user);
 
             if (ticketInsertion.ErrorCode == "noLog")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -67,21 +91,14 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "adm,user")]
         public async Task<IActionResult> Update(string id, Ticket ticketIn)
         {
             Ticket ticket = new();
             string returnMsg;
+            var user = User.Identity.Name;
 
-            var user = await SearchUser.ReturnUser(ticketIn.LoginUser);
-
-            if (user.LoginUser == null)
-                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage("noBlank"));
-            if (user.ErrorCode != null)
-                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM" && user.Sector != "USER")
-                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage("noPermited"));
-            else
-                ticket = _ticketService.Get(id);
+            ticket = _ticketService.Get(id);
 
             if (ticket == null)
                 return NotFound();
@@ -97,21 +114,14 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "adm,user")]
         public async Task<IActionResult> Delete(string id, Ticket ticketIn)
         {
             Ticket ticket = new();
             string returnMsg;
+            var user = User.Identity.Name;
 
-            var user = await SearchUser.ReturnUser(ticketIn.LoginUser);
-
-            if (user.LoginUser == null)
-                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage("noBlank"));
-            if (user.ErrorCode != null)
-                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM" && user.Sector != "USER")
-                return BadRequest("Reserva - " + ErrorMessage.ReturnMessage("noPermited"));
-            else
-                ticket = _ticketService.Get(id);
+            ticket = _ticketService.Get(id);
 
             if (ticket == null)
                 return NotFound();

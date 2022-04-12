@@ -63,6 +63,8 @@ namespace AndreAirlinesAPI3._0ErrorMessages
                 msg = "Ocorreu um erro ao tentar verificar os dados internacionais do aeroporto. Favor tentar novamente.";
             else if (errorCode == "noLog")
                 msg = "Ocorreu um erro ao tentar gravar o Log. As alterações foram revertidas. Favor tentar novamente.";
+            else if (errorCode == "noUser")
+                msg = "Não foi encontrado nenhum usuário. Favor tentar novamente.";
             else if (errorCode.Contains("timeout"))
                 msg = "A API de consulta está fora do ar. Tente novamente em instantes.";
             else if (errorCode.Contains("noLength"))

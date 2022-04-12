@@ -40,7 +40,7 @@ namespace AndreAirlinesAPI3._0Flight.Service
 
                 return flights;
             }
-        }            
+        }
 
         public Flight Get(string id)
         {
@@ -49,7 +49,7 @@ namespace AndreAirlinesAPI3._0Flight.Service
             if (id.Length != 24)
             {
                 flight.ErrorCode = "noLength";
-                
+
                 return flight;
             }
 
@@ -68,12 +68,21 @@ namespace AndreAirlinesAPI3._0Flight.Service
 
                 return flight;
             }
-        }        
+        }
 
-        public async Task<Flight> Create(Flight flight)
+        public async Task<Flight> Create(Flight flight, string username)
         {
             bool isIataCode = false;
             bool isRegistration = false;
+
+            var user = await SearchUser.ReturnUser(username);
+
+            if (user == null || user.ErrorCode != null)
+            {
+                flight.ErrorCode = user.ErrorCode;
+
+                return flight;
+            }
 
             if (flight.Origin.IataCode != null)
                 isIataCode = true;
@@ -118,22 +127,7 @@ namespace AndreAirlinesAPI3._0Flight.Service
             else
                 flight.Airship = airship;
 
-            var user = await SearchUser.ReturnUser(airship.LoginUser);
-
-            if (user.ErrorCode != null)
-            {
-                flight.ErrorCode = user.ErrorCode;
-
-                return flight;
-            }
-            else if (user.Sector != "ADM" && user.Sector != "USER")
-            {
-                flight.ErrorCode = "noPermited";
-
-                return flight;
-            }
-            else
-                _flight.InsertOne(flight);
+            _flight.InsertOne(flight);
 
             Log log = new();
             log.User = user;
@@ -156,9 +150,13 @@ namespace AndreAirlinesAPI3._0Flight.Service
             return flight;
         }
 
-        public async Task<string> Update(string id, Flight flightIn, User user)
+        public async Task<string> Update(string id, Flight flightIn, string username)
         {
             var flightBefore = Get(flightIn.Id);
+            var user = await SearchUser.ReturnUser(username);
+
+            if (user == null || user.ErrorCode != null)
+                return "noUser";
 
             _flight.ReplaceOne(flight => flight.Id == id, flightIn);
 
@@ -178,9 +176,13 @@ namespace AndreAirlinesAPI3._0Flight.Service
             return returnMsg;
         }
 
-        public async Task<string> Remove(string id, Flight flightIn, User user)
+        public async Task<string> Remove(string id, Flight flightIn, string username)
         {
             var flightBefore = Get(flightIn.Id);
+            var user = await SearchUser.ReturnUser(username);
+
+            if (user == null || user.ErrorCode != null)
+                return "noUser";
 
             _flight.DeleteOne(flight => flight.Id == flightIn.Id);
 

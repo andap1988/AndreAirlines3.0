@@ -70,16 +70,18 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
             }
         }       
 
-        public async Task<BasePrice> Create(BasePrice basePrice)
+        public async Task<BasePrice> Create(BasePrice basePrice, string username, string token)
         {
-            bool isIataCode = false;
+            var user = await SearchUser.ReturnUser(username);
 
-            if (basePrice.LoginUser == null)
+            if (user == null || user.ErrorCode != null)
             {
-                basePrice.ErrorCode = "noBlank";
+                basePrice.ErrorCode = user.ErrorCode;
 
                 return basePrice;
             }
+
+            bool isIataCode = false;
 
             if (basePrice.Origin.IataCode != null)
                 isIataCode = true;
@@ -110,22 +112,7 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
             else
                 basePrice.Destiny = airportDestiny;
 
-            var user = await SearchUser.ReturnUser(basePrice.LoginUser);
-
-            if (user.ErrorCode != null)
-            {
-                basePrice.ErrorCode = user.ErrorCode;
-
-                return basePrice;
-            }
-            else if (user.Sector != "ADM")
-            {
-                basePrice.ErrorCode = "noPermited";
-
-                return basePrice;
-            }
-            else
-                _basePrice.InsertOne(basePrice);
+            _basePrice.InsertOne(basePrice);
 
             Log log = new();
             log.User = user;
@@ -148,9 +135,13 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
             return basePrice;
         }
 
-        public async Task<string> Update(string id, BasePrice basePriceIn, User user)
+        public async Task<string> Update(string id, BasePrice basePriceIn, string username)
         {
             var basePriceBefore = Get(basePriceIn.Id);
+            var user = await SearchUser.ReturnUser(username);
+
+            if (user == null || user.ErrorCode != null)
+                return "noUser";
 
             _basePrice.ReplaceOne(basePrice => basePrice.Id == id, basePriceIn);
 
@@ -170,9 +161,13 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
             return returnMsg;
         }
 
-        public async Task<string> Remove(string id, BasePrice basePriceIn, User user)
+        public async Task<string> Remove(string id, BasePrice basePriceIn, string username)
         {
             var basePriceBefore = Get(basePriceIn.Id);
+            var user = await SearchUser.ReturnUser(username);
+
+            if (user == null || user.ErrorCode != null)
+                return "noUser";
 
             _basePrice.DeleteOne(basePrice => basePrice.Id == basePriceIn.Id);
 

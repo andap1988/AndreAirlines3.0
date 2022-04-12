@@ -91,11 +91,13 @@ namespace AndreAirlinesAPI3._0Airship.Service
             }
         }
 
-        public async Task<Airship> Create(Airship airship)
+        public async Task<Airship> Create(Airship airship, string username)
         {
-            if (airship.LoginUser == null)
+            var user = await SearchUser.ReturnUser(username);
+
+            if (user == null || user.ErrorCode != null)
             {
-                airship.ErrorCode = "noBlank";
+                airship.ErrorCode = user.ErrorCode;
 
                 return airship;
             }
@@ -115,22 +117,8 @@ namespace AndreAirlinesAPI3._0Airship.Service
                 return airship;
             }
 
-            var user = await SearchUser.ReturnUser(airship.LoginUser);
 
-            if (user.ErrorCode != null)
-            {
-                airship.ErrorCode = user.ErrorCode;
-
-                return airship;
-            }
-            else if (user.Sector != "ADM")
-            {
-                airship.ErrorCode = "noPermited";
-
-                return airship;
-            }
-            else
-                _airship.InsertOne(airship);
+            _airship.InsertOne(airship);
 
             Log log = new();
             log.User = user;
@@ -153,9 +141,13 @@ namespace AndreAirlinesAPI3._0Airship.Service
             return airship;
         }
 
-        public async Task<string> Update(string id, Airship airshipIn, User user)
-        {
+        public async Task<string> Update(string id, Airship airshipIn, string username)
+        { 
             var airshipBefore = GetRegistration(airshipIn.Registration);
+            var user = await SearchUser.ReturnUser(username);
+
+            if (user == null || user.ErrorCode != null)
+                return "noUser";
 
             _airship.ReplaceOne(airship => airship.Id == id, airshipIn);
 
@@ -175,9 +167,13 @@ namespace AndreAirlinesAPI3._0Airship.Service
             return returnMsg;
         }
 
-        public async Task<string> Remove(string id, Airship airshipIn, User user)
+        public async Task<string> Remove(string id, Airship airshipIn, string username)
         {
             var airshipBefore = GetRegistration(airshipIn.Registration);
+            var user = await SearchUser.ReturnUser(username);
+
+            if (user == null || user.ErrorCode != null)
+                return "noUser";
 
             _airship.DeleteOne(airship => airship.Id == airshipIn.Id);
 
@@ -195,6 +191,6 @@ namespace AndreAirlinesAPI3._0Airship.Service
                 _airship.InsertOne(airshipBefore);
 
             return returnMsg;
-        }           
+        }
     }
 }

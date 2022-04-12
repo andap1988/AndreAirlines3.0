@@ -1,8 +1,10 @@
 ﻿using AndreAirlinesAPI3._0Airship.Service;
 using AndreAirlinesAPI3._0ErrorMessages;
 using AndreAirlinesAPI3._0Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -17,6 +19,27 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
         public AirshipsController(AirshipService airshipService)
         {
             _airshipService = airshipService;
+        }
+
+        [HttpPost]
+        [Route("login")]
+        [AllowAnonymous]
+        public async Task<ActionResult<dynamic>> Authenticate([FromBody] User userIn)
+        {
+            User searchUser = await SearchUser.ReturnUserLogin(userIn);
+
+            if (searchUser == null || searchUser.ErrorCode != null)
+                return NotFound("Usuário - " + ErrorMessage.ReturnMessage("noUser"));
+
+            var token = TokenService.GenerateToken(searchUser);
+
+            searchUser.Password = "";
+
+            return new
+            {
+                user = searchUser,
+                token = token
+            };
         }
 
         [HttpGet]
@@ -45,6 +68,7 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
         }
 
         [HttpGet("registration/{registration}")]
+        [Authorize(Roles = "adm")]
         public ActionResult<Airship> GetRegistration(string registration)
         {
             var airship = _airshipService.GetRegistration(registration.ToUpper());
@@ -58,9 +82,13 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "adm")]
         public async Task<ActionResult<Airship>> Create(Airship airship)
         {
-            var airshipInsertion = await _airshipService.Create(airship);
+            var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
+
+            var airshipInsertion = await _airshipService.Create(airship, user);
 
             if (airshipInsertion.ErrorCode == "noLog")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -71,21 +99,14 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "adm")]
         public async Task<IActionResult> Update(string id, Airship airshipIn)
         {
             Airship airship = new();
             string returnMsg;
+            var user = User.Identity.Name;
 
-            var user = await SearchUser.ReturnUser(airshipIn.LoginUser);
-
-            if (user.LoginUser == null)
-                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage("noBlank"));
-            if (user.ErrorCode != null)
-                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM")
-                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage("noPermited"));
-            else
-                airship = _airshipService.Get(id);
+            airship = _airshipService.Get(id);
 
             if (airship == null)
                 return NotFound();
@@ -94,28 +115,23 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
             else
                 returnMsg = await _airshipService.Update(id, airshipIn, user);
 
-            if (returnMsg != "ok")
+            if (returnMsg == "noUser")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noUser"));
+            else if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
             return Ok("Aeronave atualizada com sucesso. Log gravado com sucesso.");
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "adm")]
         public async Task<IActionResult> Delete(string id, Airship airshipIn)
         {
             Airship airship = new();
             string returnMsg;
+            var user = User.Identity.Name;
 
-            var user = await SearchUser.ReturnUser(airshipIn.LoginUser);
-
-            if (user.LoginUser == null)
-                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage("noBlank"));
-            if (user.ErrorCode != null)
-                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM")
-                return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage("noPermited"));
-            else
-                airship = _airshipService.Get(id);
+            airship = _airshipService.Get(id);
 
             if (airship == null)
                 return NotFound();
@@ -124,7 +140,9 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
             else
                 returnMsg = await _airshipService.Remove(airship.Id, airship, user);
 
-            if (returnMsg != "ok")
+            if (returnMsg == "noUser")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noUser"));
+            else if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
             return Ok("Aeronave excluído com sucesso. Log gravado com sucesso.");

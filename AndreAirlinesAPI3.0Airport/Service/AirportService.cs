@@ -108,7 +108,7 @@ namespace AndreAirlinesAPI3._0Airport.Service
 
                 return airport;
             }
-            else if (user.Sector != "ADM")
+            else if (user.Role != "ADM")
             {
                 airport.ErrorCode = "noPermited";
 

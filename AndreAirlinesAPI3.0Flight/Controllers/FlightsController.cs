@@ -1,6 +1,7 @@
 ﻿using AndreAirlinesAPI3._0ErrorMessages;
 using AndreAirlinesAPI3._0Flight.Service;
 using AndreAirlinesAPI3._0Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -17,6 +18,27 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
         public FlightsController(FlightService flightService)
         {
             _flightService = flightService;
+        }
+
+        [HttpPost]
+        [Route("login")]
+        [AllowAnonymous]
+        public async Task<ActionResult<dynamic>> Authenticate([FromBody] User userIn)
+        {
+            User searchUser = await SearchUser.ReturnUserLogin(userIn);
+
+            if (searchUser == null || searchUser.ErrorCode != null)
+                return NotFound("Usuário - " + ErrorMessage.ReturnMessage("noUser"));
+
+            var token = TokenService.GenerateToken(searchUser);
+
+            searchUser.Password = "";
+
+            return new
+            {
+                user = searchUser,
+                token = token
+            };
         }
 
         [HttpGet]
@@ -44,9 +66,12 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "adm,user")]
         public async Task<ActionResult<Flight>> Create(Flight flight)
         {
-            var flightInsertion = await _flightService.Create(flight);
+            var user = User.Identity.Name;
+
+            var flightInsertion = await _flightService.Create(flight, user);
 
             if (flightInsertion.ErrorCode == "noLog")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -61,21 +86,14 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "adm,user")]
         public async Task<IActionResult> Update(string id, Flight flightIn)
         {
             Flight flight = new();
             string returnMsg;
+            var user = User.Identity.Name;
 
-            var user = await SearchUser.ReturnUser(flightIn.LoginUser);
-
-            if (user.LoginUser == null)
-                return BadRequest("Voo - " + ErrorMessage.ReturnMessage("noBlank"));
-            if (user.ErrorCode != null)
-                return BadRequest("Voo - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM" && user.Sector != "USER")
-                return BadRequest("Voo - " + ErrorMessage.ReturnMessage("noPermited"));
-            else
-                flight = _flightService.Get(id);
+            flight = _flightService.Get(id);
 
             if (flight == null)
                 return NotFound();
@@ -91,21 +109,14 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "adm,user")]
         public async Task<IActionResult> Delete(string id, Flight flightIn)
         {
             Flight flight = new();
             string returnMsg;
+            var user = User.Identity.Name;
 
-            var user = await SearchUser.ReturnUser(flightIn.LoginUser);
-
-            if (user.LoginUser == null)
-                return BadRequest("Voo - " + ErrorMessage.ReturnMessage("noBlank"));
-            if (user.ErrorCode != null)
-                return BadRequest("Voo - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM" && user.Sector != "USER")
-                return BadRequest("Voo - " + ErrorMessage.ReturnMessage("noPermited"));
-            else
-                flight = _flightService.Get(id);
+            flight = _flightService.Get(id);
 
             if (flight == null)
                 return NotFound();

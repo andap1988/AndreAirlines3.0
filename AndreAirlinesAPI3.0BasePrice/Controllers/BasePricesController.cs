@@ -1,8 +1,10 @@
 ﻿using AndreAirlinesAPI3._0BasePrice.Service;
 using AndreAirlinesAPI3._0ErrorMessages;
 using AndreAirlinesAPI3._0Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -17,6 +19,27 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
         public BasePricesController(BasePriceService basePriceService)
         {
             _basePriceService = basePriceService;
+        }
+
+        [HttpPost]
+        [Route("login")]
+        [AllowAnonymous]
+        public async Task<ActionResult<dynamic>> Authenticate([FromBody] User userIn)
+        {
+            User searchUser = await SearchUser.ReturnUserLogin(userIn);
+
+            if (searchUser == null || searchUser.ErrorCode != null)
+                return NotFound("Usuário - " + ErrorMessage.ReturnMessage("noUser"));
+
+            var token = TokenService.GenerateToken(searchUser);
+
+            searchUser.Password = "";
+
+            return new
+            {
+                user = searchUser,
+                token = token
+            };
         }
 
         [HttpGet]
@@ -44,9 +67,13 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "adm")]
         public async Task<ActionResult<BasePrice>> Create(BasePrice basePrice)
         {
-            var basePriceInsertion = await _basePriceService.Create(basePrice);
+            var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
+
+            var basePriceInsertion = await _basePriceService.Create(basePrice, user, token);
 
             if (basePriceInsertion.ErrorCode == "noLog")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -62,21 +89,14 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "adm")]
         public async Task<IActionResult> Update(string id, BasePrice basePriceIn)
         {
             BasePrice basePrice = new();
             string returnMsg;
+            var user = User.Identity.Name;
 
-            var user = await SearchUser.ReturnUser(basePriceIn.LoginUser);
-
-            if (user.LoginUser == null)
-                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage("noBlank"));
-            if (user.ErrorCode != null)
-                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM")
-                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage("noPermited"));
-            else
-                basePrice = _basePriceService.Get(id);
+            basePrice = _basePriceService.Get(id);
 
             if (basePrice == null)
                 return NotFound();
@@ -85,28 +105,23 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
             else
                 returnMsg = await _basePriceService.Update(id, basePriceIn, user);
 
-            if (returnMsg != "ok")
+            if (returnMsg == "noUser")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noUser"));
+            else if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
             return Ok("Preço base atualizado com sucesso. Log gravado com sucesso.");
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "adm")]
         public async Task<IActionResult> Delete(string id, BasePrice basePriceIn)
         {
             BasePrice basePrice = new();
             string returnMsg;
+            var user = User.Identity.Name;
 
-            var user = await SearchUser.ReturnUser(basePriceIn.LoginUser);
-
-            if (user.LoginUser == null)
-                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage("noBlank"));
-            if (user.ErrorCode != null)
-                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Sector != "ADM")
-                return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage("noPermited"));
-            else
-                basePrice = _basePriceService.Get(id);
+            basePrice = _basePriceService.Get(id);
 
             if (basePrice == null)
                 return NotFound();
@@ -115,7 +130,9 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
             else
                 returnMsg = await _basePriceService.Remove(basePrice.Id, basePrice, user);
 
-            if (returnMsg != "ok")
+            if (returnMsg == "noUser")
+                return BadRequest("Log - " + ErrorMessage.ReturnMessage("noUser"));
+            else if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
 
             return Ok("Preço base excluído com sucesso. Log gravado com sucesso.");

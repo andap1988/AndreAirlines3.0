@@ -70,13 +70,14 @@ namespace AndreAirlinesAPI3._0Ticket.Service
             }
         }            
 
-        public async Task<Ticket> Create(Ticket ticket)
+        public async Task<Ticket> Create(Ticket ticket, string username)
         {
             bool isCpf = false;
+            var user = await SearchUser.ReturnUser(username);
 
-            if (ticket.LoginUser == null)
+            if (user == null || user.ErrorCode != null)
             {
-                ticket.ErrorCode = "noBlank";
+                ticket.ErrorCode = user.ErrorCode;
 
                 return ticket;
             }
@@ -128,21 +129,6 @@ namespace AndreAirlinesAPI3._0Ticket.Service
             else
                 ticket.Class = classs;
 
-            var user = await SearchUser.ReturnUser(ticket.LoginUser);
-
-            if (user.ErrorCode != null)
-            {
-                ticket.ErrorCode = user.ErrorCode;
-
-                return ticket;
-            }
-            else if (user.Sector != "ADM" && user.Sector != "USER")
-            {
-                ticket.ErrorCode = "noPermited";
-
-                return ticket;
-            }
-
             var ticketWithPrice = PriceTicket.ReturnTicketWithPrice(ticket);
 
             _ticket.InsertOne(ticketWithPrice);
@@ -168,9 +154,13 @@ namespace AndreAirlinesAPI3._0Ticket.Service
             return ticketWithPrice;
         }
 
-        public async Task<string> Update(string id, Ticket ticketIn, User user)
+        public async Task<string> Update(string id, Ticket ticketIn, string username)
         {
             var ticketBefore = Get(ticketIn.Id);
+            var user = await SearchUser.ReturnUser(username);
+
+            if (user == null || user.ErrorCode != null)
+                return "noUser";
 
             _ticket.ReplaceOne(ticket => ticket.Id == id, ticketIn);
 
@@ -190,9 +180,13 @@ namespace AndreAirlinesAPI3._0Ticket.Service
             return returnMsg;
         }
 
-        public async Task<string> Remove(string id, Ticket ticketIn, User user)
+        public async Task<string> Remove(string id, Ticket ticketIn, string username)
         {
             var ticketBefore = Get(ticketIn.Id);
+            var user = await SearchUser.ReturnUser(username);
+
+            if (user == null || user.ErrorCode != null)
+                return "noUser";
 
             _ticket.DeleteOne(ticket => ticket.Id == ticketIn.Id);
 

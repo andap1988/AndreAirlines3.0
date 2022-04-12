@@ -69,13 +69,35 @@ namespace AndreAirlinesAPI3._0User.Service
                 return user;
             }
         }
+        public User GetUserLogin(User userIn)
+        {
+            User user = new();
+
+            try
+            {
+                user = _user.Find<User>(user => user.Login == userIn.Login && user.Password == userIn.Password).FirstOrDefault();
+
+                return user;
+            }
+            catch (Exception exception)
+            {
+                if (exception.InnerException != null)
+                    user.ErrorCode = exception.InnerException.Message;
+                else
+                    user.ErrorCode = exception.Message.ToString();
+
+                return user;
+            }
+        }
+
 
         public User GetLoginUser(string loginUser)
         {
             User user = new();
+
             try
             {
-                user = _user.Find<User>(user => user.LoginUser == loginUser).FirstOrDefault();
+                user = _user.Find<User>(user => user.Login == loginUser).FirstOrDefault();
 
                 return user;
             }
@@ -117,7 +139,7 @@ namespace AndreAirlinesAPI3._0User.Service
 
             var usersLogin = Get();
 
-            if (usersLogin.Count < 1 && user.Sector == "ADM")
+            if (usersLogin.Count < 1 && user.Role == "ADM")
                 userLogin = user;
             else
                 userLogin = GetLoginUser(user.LoginUser);
@@ -134,7 +156,7 @@ namespace AndreAirlinesAPI3._0User.Service
 
                 return user;
             }
-            else if (userLogin.Sector != "ADM")
+            else if (userLogin.Role != "ADM")
             {
                 user.ErrorCode = "noPermited";
 

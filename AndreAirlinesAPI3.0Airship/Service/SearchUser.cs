@@ -1,6 +1,8 @@
 ﻿using AndreAirlinesAPI3._0Models;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace AndreAirlinesAPI3._0Airship.Service
@@ -42,5 +44,62 @@ namespace AndreAirlinesAPI3._0Airship.Service
                 return user;
             }
         }
+
+        public static async Task<User> ReturnUserLogin(User userIn)
+        {
+            HttpClient client = new HttpClient();
+            User user = new();
+
+
+            try
+            {
+                var json = JsonConvert.SerializeObject(userIn);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = await client.PostAsync("https://localhost:44345/api/Users/userlogin/", content);
+                response.EnsureSuccessStatusCode();
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    user = JsonConvert.DeserializeObject<User>(responseBody);
+                    user.ErrorCode = null;
+
+                    return user;
+                }
+                else
+                {
+                    user.ErrorCode = response.StatusCode.ToString();
+
+                    return user;
+                }
+
+            }
+            catch (HttpRequestException exception)
+            {
+                if (exception.StatusCode == null)
+                    user.ErrorCode = exception.InnerException.Message;
+                else
+                    user.ErrorCode = exception.StatusCode.ToString();
+
+                return user;
+            }
+        }
+
+        /*
+         var client = new RestClient("https://localhost:44349/api/home/login");
+client.Timeout = -1;
+var request = new RestRequest(Method.POST);
+request.AddHeader("Content-Type", "application/json");
+var body = @"{
+" + "\n" +
+@"  ""username"": ""admin"",
+" + "\n" +
+@"  ""password"": ""admin""
+" + "\n" +
+@"}";
+request.AddParameter("application/json", body,  ParameterType.RequestBody);
+IRestResponse response = client.Execute(request);
+Console.WriteLine(response.Content);
+         */
     }
 }

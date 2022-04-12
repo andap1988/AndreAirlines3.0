@@ -40,7 +40,7 @@ namespace AndreAirlinesAPI3._0Passenger.Service
 
                 return passengers;
             }
-        }            
+        }
 
         public Passenger Get(string id)
         {
@@ -68,7 +68,7 @@ namespace AndreAirlinesAPI3._0Passenger.Service
 
                 return passenger;
             }
-        }   
+        }
 
         public Passenger GetCpf(string cpf)
         {
@@ -89,13 +89,15 @@ namespace AndreAirlinesAPI3._0Passenger.Service
 
                 return passenger;
             }
-        }            
+        }
 
-        public async Task<Passenger> Create(Passenger passenger)
+        public async Task<Passenger> Create(Passenger passenger, string username)
         {
-            if (passenger.LoginUser == null)
+            var user = await SearchUser.ReturnUser(username);
+
+            if (user == null || user.ErrorCode != null)
             {
-                passenger.ErrorCode = "noBlank";
+                passenger.ErrorCode = user.ErrorCode;
 
                 return passenger;
             }
@@ -125,22 +127,7 @@ namespace AndreAirlinesAPI3._0Passenger.Service
                 return passenger;
             }
 
-            var user = await SearchUser.ReturnUser(passenger.LoginUser);
-
-            if (user.ErrorCode != null)
-            {
-                passenger.ErrorCode = user.ErrorCode;
-
-                return passenger;
-            }
-            else if (user.Sector != "ADM" && user.Sector != "USER")
-            {
-                passenger.ErrorCode = "noPermited";
-
-                return passenger;
-            }
-            else
-                _passenger.InsertOne(passenger);
+            _passenger.InsertOne(passenger);
 
             Log log = new();
             log.User = user;
@@ -163,9 +150,13 @@ namespace AndreAirlinesAPI3._0Passenger.Service
             return passenger;
         }
 
-        public async Task<string> Update(string id, Passenger passengerIn, User user)
+        public async Task<string> Update(string id, Passenger passengerIn, string username)
         {
             var passengerBefore = Get(passengerIn.Id);
+            var user = await SearchUser.ReturnUser(username);
+
+            if (user == null || user.ErrorCode != null)
+                return "noUser";
 
             _passenger.ReplaceOne(passenger => passenger.Id == id, passengerIn);
 
@@ -185,9 +176,13 @@ namespace AndreAirlinesAPI3._0Passenger.Service
             return returnMsg;
         }
 
-        public async Task<string> Remove(string id, Passenger passengerIn, User user)
+        public async Task<string> Remove(string id, Passenger passengerIn, string username)
         {
             var passengerBefore = Get(passengerIn.Id);
+            var user = await SearchUser.ReturnUser(username);
+
+            if (user == null || user.ErrorCode != null)
+                return "noUser";
 
             _passenger.DeleteOne(passenger => passenger.Id == passengerIn.Id);
 

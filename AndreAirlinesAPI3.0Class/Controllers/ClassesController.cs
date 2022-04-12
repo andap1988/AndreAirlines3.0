@@ -1,6 +1,7 @@
 ﻿using AndreAirlinesAPI3._0Class.Service;
 using AndreAirlinesAPI3._0ErrorMessages;
 using AndreAirlinesAPI3._0Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -18,6 +19,27 @@ namespace AndreAirlinesAPI3._0Class.Controllers
         {
             _classService = classService;
         }
+
+/*        [HttpPost]
+        [Route("login")]
+        [AllowAnonymous]
+        public async Task<ActionResult<dynamic>> Authenticate([FromBody] User userIn)
+        {
+            User searchUser = await SearchUser.ReturnUserLogin(userIn);
+
+            if (searchUser == null || searchUser.ErrorCode != null)
+                return NotFound("Usuário - " + ErrorMessage.ReturnMessage("noUser"));
+
+            var token = TokenService.GenerateToken(searchUser);
+
+            searchUser.Password = "";
+
+            return new
+            {
+                user = searchUser,
+                token = token
+            };
+        }*/
 
         [HttpGet]
         public ActionResult<List<Class>> Get()

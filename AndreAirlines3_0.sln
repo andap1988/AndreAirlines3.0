@@ -33,9 +33,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AndreAirlinesAPI3.0Ticket",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AndreAirlinesAPI3.0User", "AndreAirlinesAPI3.0User\AndreAirlinesAPI3.0User.csproj", "{D2D40DCA-D00F-4302-A4FB-6A201AA8861A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AndreAirlinesAPI3.0Log", "AndreAirlinesAPI3.0Log\AndreAirlinesAPI3.0Log.csproj", "{546DB641-A6BA-4814-AC98-C6EEABC8F70D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AndreAirlinesAPI3.0Log", "AndreAirlinesAPI3.0Log\AndreAirlinesAPI3.0Log.csproj", "{546DB641-A6BA-4814-AC98-C6EEABC8F70D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AndreAirlinesAPI3.0Frontend", "AndreAirlinesAPI3.0Frontend\AndreAirlinesAPI3.0Frontend.csproj", "{FC76E5F7-4D8D-4BDD-BF3A-3D95E8F2F7E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AndreAirlinesAPI3.0Frontend", "AndreAirlinesAPI3.0Frontend\AndreAirlinesAPI3.0Frontend.csproj", "{FC76E5F7-4D8D-4BDD-BF3A-3D95E8F2F7E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
