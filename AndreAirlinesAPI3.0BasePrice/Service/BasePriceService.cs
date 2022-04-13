@@ -72,7 +72,7 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
 
         public async Task<BasePrice> Create(BasePrice basePrice, string username, string token)
         {
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
             {
@@ -86,7 +86,7 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
             if (basePrice.Origin.IataCode != null)
                 isIataCode = true;
 
-            var airportOrigin = await SearchAirport.ReturnAirport(basePrice.Origin, isIataCode);
+            var airportOrigin = await SearchAirport.ReturnAirport(basePrice.Origin, isIataCode, token);
             isIataCode = false;
 
             if (airportOrigin.ErrorCode != null)
@@ -101,7 +101,7 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
             if (basePrice.Destiny.IataCode != null)
                 isIataCode = true;
 
-            var airportDestiny = await SearchAirport.ReturnAirport(basePrice.Destiny, isIataCode);
+            var airportDestiny = await SearchAirport.ReturnAirport(basePrice.Destiny, isIataCode, token);
 
             if (airportDestiny.ErrorCode != null)
             {
@@ -135,10 +135,10 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
             return basePrice;
         }
 
-        public async Task<string> Update(string id, BasePrice basePriceIn, string username)
+        public async Task<string> Update(string id, BasePrice basePriceIn, string username, string token)
         {
             var basePriceBefore = Get(basePriceIn.Id);
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
                 return "noUser";
@@ -161,10 +161,10 @@ namespace AndreAirlinesAPI3._0BasePrice.Service
             return returnMsg;
         }
 
-        public async Task<string> Remove(string id, BasePrice basePriceIn, string username)
+        public async Task<string> Remove(string id, BasePrice basePriceIn, string username, string token)
         {
             var basePriceBefore = Get(basePriceIn.Id);
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
                 return "noUser";

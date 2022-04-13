@@ -43,6 +43,7 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public ActionResult<List<BasePrice>> Get()
         {
             var basePrice = _basePriceService.Get();
@@ -54,6 +55,7 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
         }
 
         [HttpGet("{id}", Name = "GetBasePrice")]
+        [Authorize]
         public ActionResult<BasePrice> Get(string id)
         {
             var baseprice = _basePriceService.Get(id);
@@ -95,6 +97,7 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
             BasePrice basePrice = new();
             string returnMsg;
             var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
             basePrice = _basePriceService.Get(id);
 
@@ -103,7 +106,7 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
             else if (basePrice.ErrorCode != null)
                 return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(basePrice.ErrorCode));
             else
-                returnMsg = await _basePriceService.Update(id, basePriceIn, user);
+                returnMsg = await _basePriceService.Update(id, basePriceIn, user, token);
 
             if (returnMsg == "noUser")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noUser"));
@@ -120,6 +123,7 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
             BasePrice basePrice = new();
             string returnMsg;
             var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
             basePrice = _basePriceService.Get(id);
 
@@ -128,7 +132,7 @@ namespace AndreAirlinesAPI3._0BasePrice.Controllers
             else if (basePrice.ErrorCode != null)
                 return BadRequest("Preço Base - " + ErrorMessage.ReturnMessage(basePrice.ErrorCode));
             else
-                returnMsg = await _basePriceService.Remove(basePrice.Id, basePrice, user);
+                returnMsg = await _basePriceService.Remove(basePrice.Id, basePrice, user, token);
 
             if (returnMsg == "noUser")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noUser"));

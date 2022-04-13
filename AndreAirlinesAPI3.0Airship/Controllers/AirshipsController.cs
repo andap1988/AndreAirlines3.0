@@ -43,6 +43,7 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public ActionResult<List<Airship>> Get()
         {
             var airships = _airshipService.Get();
@@ -55,6 +56,7 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
         }
 
         [HttpGet("{id}", Name = "GetAirship")]
+        [Authorize]
         public ActionResult<Airship> Get(string id)
         {
             var airship = _airshipService.Get(id);
@@ -88,7 +90,7 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
             var user = User.Identity.Name;
             var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
-            var airshipInsertion = await _airshipService.Create(airship, user);
+            var airshipInsertion = await _airshipService.Create(airship, user, token);
 
             if (airshipInsertion.ErrorCode == "noLog")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -105,6 +107,7 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
             Airship airship = new();
             string returnMsg;
             var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
             airship = _airshipService.Get(id);
 
@@ -113,7 +116,7 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
             else if (airship.ErrorCode != null)
                 return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(airship.ErrorCode));
             else
-                returnMsg = await _airshipService.Update(id, airshipIn, user);
+                returnMsg = await _airshipService.Update(id, airshipIn, user, token);
 
             if (returnMsg == "noUser")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noUser"));
@@ -130,6 +133,7 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
             Airship airship = new();
             string returnMsg;
             var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
             airship = _airshipService.Get(id);
 
@@ -138,7 +142,7 @@ namespace AndreAirlinesAPI3._0Airship.Controllers
             else if (airship.ErrorCode != null)
                 return BadRequest("Aeronave - " + ErrorMessage.ReturnMessage(airship.ErrorCode));
             else
-                returnMsg = await _airshipService.Remove(airship.Id, airship, user);
+                returnMsg = await _airshipService.Remove(airship.Id, airship, user, token);
 
             if (returnMsg == "noUser")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noUser"));

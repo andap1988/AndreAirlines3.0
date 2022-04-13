@@ -91,31 +91,18 @@ namespace AndreAirlinesAPI3._0Airport.Service
             }
         }
 
-        public async Task<Airport> Create(Airport airport)
+        public async Task<Airport> Create(Airport airport, string username, string token)
         {
-            if (airport.LoginUser == null)
-            {
-                airport.ErrorCode = "noBlank";
+            var user = await SearchUser.ReturnUser(username, token);
 
-                return airport;
-            }            
-
-            var user = await SearchUser.ReturnUser(airport.LoginUser);
-
-            if (user.ErrorCode != null)
+            if (user == null || user.ErrorCode != null)
             {
                 airport.ErrorCode = user.ErrorCode;
 
                 return airport;
             }
-            else if (user.Role != "ADM")
-            {
-                airport.ErrorCode = "noPermited";
 
-                return airport;
-            }
-            else
-                _airport.InsertOne(airport);
+            _airport.InsertOne(airport);
 
             Log log = new();
             log.User = user;
@@ -126,6 +113,7 @@ namespace AndreAirlinesAPI3._0Airport.Service
             log.ErrorCode = null;
 
             var returnMsg = await PostLogService.InsertLog(log);
+            // returnMsg = "ok";
 
             if (returnMsg != "ok")
             {
@@ -138,10 +126,14 @@ namespace AndreAirlinesAPI3._0Airport.Service
             return airport;
         }
 
-        public async Task<string> Update(string id, Airport airportIn, User user)
+        public async Task<string> Update(string id, Airport airportIn, string username, string token)
         {
             var airportBefore = GetIataCode(airportIn.IataCode);
-            
+            var user = await SearchUser.ReturnUser(username, token);
+
+            if (user == null || user.ErrorCode != null)
+                return "noUser";
+
             _airport.ReplaceOne(airport => airport.Id == id, airportIn);
 
             Log log = new();
@@ -153,6 +145,7 @@ namespace AndreAirlinesAPI3._0Airport.Service
             log.ErrorCode = null;
 
             var returnMsg = await PostLogService.InsertLog(log);
+            // returnMsg = "ok";
 
             if (returnMsg != "ok")
                 _airport.ReplaceOne(airport => airport.Id == id, airportBefore);
@@ -160,9 +153,13 @@ namespace AndreAirlinesAPI3._0Airport.Service
             return returnMsg;
         }
 
-        public async Task<string> Remove(string id, Airport airportIn, User user)
+        public async Task<string> Remove(string id, Airport airportIn, string username, string token)
         {
             var airportBefore = Get(airportIn.Id);
+            var user = await SearchUser.ReturnUser(username, token);
+
+            if (user == null || user.ErrorCode != null)
+                return "noUser";
 
             _airport.DeleteOne(airport => airport.Id == airportIn.Id);
 
@@ -175,6 +172,7 @@ namespace AndreAirlinesAPI3._0Airport.Service
             log.ErrorCode = null;
 
             var returnMsg = await PostLogService.InsertLog(log);
+            // returnMsg = "ok";
 
             if (returnMsg != "ok")
                 _airport.InsertOne(airportBefore);

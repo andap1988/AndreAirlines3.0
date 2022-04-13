@@ -1,16 +1,19 @@
 ﻿using AndreAirlinesAPI3._0Models;
 using Newtonsoft.Json;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace AndreAirlinesAPI3._0Ticket.Service
 {
     public class SearchBasePrice
     {
-        public static async Task<BasePrice> ReturnBasePrice(BasePrice basePriceIn)
+        public static async Task<BasePrice> ReturnBasePrice(BasePrice basePriceIn, string token)
         {
             HttpClient client = new HttpClient();
             BasePrice basePrice = new();
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {

@@ -1,13 +1,14 @@
 ﻿using AndreAirlinesAPI3._0Models;
 using Newtonsoft.Json;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace AndreAirlinesAPI3._0Ticket.Service
 {
     public class SearchPassenger
     {
-        public static async Task<Passenger> ReturnPassenger(Passenger passengerIn, bool isCpf)
+        public static async Task<Passenger> ReturnPassenger(Passenger passengerIn, bool isCpf, string token)
         {
             HttpClient client = new HttpClient();
             Passenger passenger = new();
@@ -17,6 +18,8 @@ namespace AndreAirlinesAPI3._0Ticket.Service
                 composeLink = "Passengers/cpf/" + passengerIn.Cpf;
             else
                 composeLink = "Passengers/" + passengerIn.Id;
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {

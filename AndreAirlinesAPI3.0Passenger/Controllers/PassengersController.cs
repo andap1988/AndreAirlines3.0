@@ -5,6 +5,7 @@ using AndreAirlinesAPI3._0SearchZipcode;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -44,6 +45,7 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public ActionResult<List<Passenger>> Get()
         {
             var passengers = _passengerService.Get();
@@ -56,6 +58,7 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
 
 
         [HttpGet("{id}", Name = "GetPassenger")]
+        [Authorize]
         public ActionResult<Passenger> Get(string id)
         {
             var passenger = _passengerService.Get(id);
@@ -86,6 +89,7 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
         public async Task<ActionResult<Passenger>> Create(Passenger passenger)
         {
             var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
             if (utilizationSearchZipcode)
             {
@@ -99,7 +103,7 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
 
             passenger.Cpf = passenger.Cpf.Replace(".", "").Replace("-", "");
 
-            var passengerInsertion = await _passengerService.Create(passenger, user);
+            var passengerInsertion = await _passengerService.Create(passenger, user, token);
 
             if (passengerInsertion.ErrorCode == "noLog")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -115,24 +119,17 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
         {
             Passenger passenger = new();
             string returnMsg;
+            var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
-            var user = await SearchUser.ReturnUser(passengerIn.LoginUser);
-
-            if (user.LoginUser == null)
-                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noBlank"));
-            if (user.ErrorCode != null)
-                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Role != "ADM" && user.Role != "USER")
-                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noPermited"));
-            else
-                passenger = _passengerService.Get(id);
+            passenger = _passengerService.Get(id);
 
             if (passenger == null)
                 return NotFound();
             else if (passenger.ErrorCode != null)
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(passenger.ErrorCode));
             else
-                returnMsg = await _passengerService.Update(id, passengerIn, user);
+                returnMsg = await _passengerService.Update(id, passengerIn, user, token);
 
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -146,24 +143,17 @@ namespace AndreAirlinesAPI3._0Passenger.Controllers
         {
             Passenger passenger = new();
             string returnMsg;
+            var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
-            var user = await SearchUser.ReturnUser(passengerIn.LoginUser);
-
-            if (user.LoginUser == null)
-                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noBlank"));
-            if (user.ErrorCode != null)
-                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Role != "ADM" && user.Role != "USER")
-                return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage("noPermited"));
-            else
-                passenger = _passengerService.Get(id);
+            passenger = _passengerService.Get(id);
 
             if (passenger == null)
                 return NotFound();
             else if (passenger.ErrorCode != null)
                 return BadRequest("Passageiro - " + ErrorMessage.ReturnMessage(passenger.ErrorCode));
             else
-                returnMsg = await _passengerService.Remove(passenger.Id, passengerIn, user);
+                returnMsg = await _passengerService.Remove(passenger.Id, passengerIn, user, token);
 
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AndreAirlinesAPI3._0User.Service
 {
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly IMongoCollection<User> _user;
 
@@ -139,7 +139,7 @@ namespace AndreAirlinesAPI3._0User.Service
 
             var usersLogin = Get();
 
-            if (usersLogin.Count < 1 && user.Role == "ADM")
+            if (usersLogin.Count < 1 && user.Role == "adm")
                 userLogin = user;
             else
                 userLogin = GetLoginUser(user.LoginUser);
@@ -156,7 +156,7 @@ namespace AndreAirlinesAPI3._0User.Service
 
                 return user;
             }
-            else if (userLogin.Role != "ADM")
+            else if (userLogin.Role != "adm")
             {
                 user.ErrorCode = "noPermited";
 
@@ -192,6 +192,7 @@ namespace AndreAirlinesAPI3._0User.Service
             log.ErrorCode = null;
 
             var returnMsg = await PostLogService.InsertLog(log);
+            // returnMsg = "ok"; only unit test
 
             if (returnMsg != "ok")
             {
@@ -219,9 +220,11 @@ namespace AndreAirlinesAPI3._0User.Service
             log.ErrorCode = null;
 
             var returnMsg = await PostLogService.InsertLog(log);
+            // returnMsg = "ok"; only unit test
 
             if (returnMsg != "ok")
                 _user.ReplaceOne(user => user.Id == id, userBefore);
+
 
             return returnMsg;
         }
@@ -241,6 +244,7 @@ namespace AndreAirlinesAPI3._0User.Service
             log.ErrorCode = null;
 
             var returnMsg = await PostLogService.InsertLog(log);
+            // returnMsg = "ok"; only unit test
 
             if (returnMsg != "ok")
                 _user.InsertOne(userBefore);

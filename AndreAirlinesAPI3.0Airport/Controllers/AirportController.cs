@@ -2,8 +2,10 @@
 using AndreAirlinesAPI3._0ErrorMessages;
 using AndreAirlinesAPI3._0Models;
 using AndreAirlinesAPI3._0SearchZipcode;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -21,7 +23,29 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
             _airportService = airportService;
         }
 
+        [HttpPost]
+        [Route("login")]
+        [AllowAnonymous]
+        public async Task<ActionResult<dynamic>> Authenticate([FromBody] User userIn)
+        {
+            User searchUser = await SearchUser.ReturnUserLogin(userIn);
+
+            if (searchUser == null || searchUser.ErrorCode != null)
+                return NotFound("Usuário - " + ErrorMessage.ReturnMessage("noUser"));
+
+            var token = TokenService.GenerateToken(searchUser);
+
+            searchUser.Password = "";
+
+            return new
+            {
+                user = searchUser,
+                token = token
+            };
+        }
+
         [HttpGet]
+        [Authorize]
         public ActionResult<List<Airport>> Get()
         {
             var airports = _airportService.Get();
@@ -33,6 +57,7 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
         }
 
         [HttpGet("{id}", Name = "GetAirport")]
+        [Authorize]
         public ActionResult<Airport> Get(string id)
         {
             var airport = _airportService.Get(id);
@@ -46,6 +71,7 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
         }
 
         [HttpGet("code/{iataCode}")]
+        [Authorize(Roles = "adm")]
         public ActionResult<Airport> GetIataCode(string iataCode)
         {
             var airport = _airportService.GetIataCode(iataCode.ToUpper());
@@ -59,8 +85,12 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "adm")]
         public async Task<ActionResult<Airport>> Create(Airport airport)
         {
+            var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
+
             if (airport.IataCode.Length != 3)
                 return BadRequest("Codigo Iata - " + ErrorMessage.ReturnMessage("noLengthIataCode"));
 
@@ -77,7 +107,7 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
             if (airport.IataCode == null)
                 return BadRequest("Codigo IATA - " + ErrorMessage.ReturnMessage("noIataCode"));
 
-            var airportData = await SearchAiportData.ReturnAirportData(airport.IataCode);
+            var airportData = await SearchAirportData.ReturnAirportData(airport.IataCode, token);
 
             if (airportData.ErrorCode != null)
                 return BadRequest("Código IATA - " + ErrorMessage.ReturnMessage(airportData.ErrorCode));
@@ -86,10 +116,10 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
                 airport.IataCode = airportData.Code;
                 airport.Address.City = airportData.City;
                 airport.Address.Country = airportData.Country;
-                airport.Address.Continent = airportData.Continent;                
+                airport.Address.Continent = airportData.Continent;
             }
 
-            var airportInsertion = await _airportService.Create(airport);
+            var airportInsertion = await _airportService.Create(airport, user, token);
 
             if (airportInsertion.ErrorCode == "noLog")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -101,28 +131,22 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "adm")]
         public async Task<IActionResult> Update(string id, Airport airportIn)
         {
             Airport airport = new();
             string returnMsg;
+            var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
-            var user = await SearchUser.ReturnUser(airportIn.LoginUser);
-
-            if (user.LoginUser == null)
-                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage("noBlank"));
-            if (user.ErrorCode != null)
-                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Role != "ADM")
-                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage("noPermited"));
-            else
-                airport = _airportService.Get(id);
+            airport = _airportService.Get(id);
 
             if (airport.ErrorCode != null)
                 return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
             else if (airport == null)
                 return NotFound();
             else
-                returnMsg = await _airportService.Update(id, airportIn, user);
+                returnMsg = await _airportService.Update(id, airportIn, user, token);
 
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -131,28 +155,22 @@ namespace AndreAirlinesAPI3._0Airport.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "adm")]
         public async Task<IActionResult> Delete(string id, Airport airportIn)
         {
             Airport airport = new();
             string returnMsg;
+            var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
-            var user = await SearchUser.ReturnUser(airportIn.LoginUser);
-
-            if (user.LoginUser == null)
-                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage("noBlank"));
-            if (user.ErrorCode != null)
-                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(user.ErrorCode));
-            else if (user.Role != "ADM")
-                return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage("noPermited"));
-            else
-                airport = _airportService.Get(id);
+            airport = _airportService.Get(id);
 
             if (airport == null)
                 return NotFound();
             else if (airport.ErrorCode != null)
                 return BadRequest("Aeroporto - " + ErrorMessage.ReturnMessage(airport.ErrorCode));
             else
-                returnMsg = await _airportService.Remove(airport.Id, airport, user);
+                returnMsg = await _airportService.Remove(airport.Id, airport, user, token);
 
             return Ok("Aeroporto excluído com sucesso. Log gravado com sucesso.");
         }

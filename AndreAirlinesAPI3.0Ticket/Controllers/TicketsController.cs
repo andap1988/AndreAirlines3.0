@@ -4,6 +4,7 @@ using AndreAirlinesAPI3._0Ticket.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -42,6 +43,7 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public ActionResult<List<Ticket>> Get()
         {
             var tickets = _ticketService.Get();
@@ -54,6 +56,7 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
 
 
         [HttpGet("{id}", Name = "GetTicket")]
+        [Authorize]
         public ActionResult<Ticket> Get(string id)
         {
             var ticket = _ticketService.Get(id);
@@ -71,7 +74,9 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
         public async Task<ActionResult<Ticket>> Create(Ticket ticket)
         {
             var user = User.Identity.Name;
-            var ticketInsertion = await _ticketService.Create(ticket, user);
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
+
+            var ticketInsertion = await _ticketService.Create(ticket, user, token);
 
             if (ticketInsertion.ErrorCode == "noLog")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -97,6 +102,7 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
             Ticket ticket = new();
             string returnMsg;
             var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
             ticket = _ticketService.Get(id);
 
@@ -105,7 +111,7 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
             else if (ticket.ErrorCode != null)
                 return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(ticket.ErrorCode));
             else
-                returnMsg = await _ticketService.Update(id, ticketIn, user);
+                returnMsg = await _ticketService.Update(id, ticketIn, user, token);
 
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -120,6 +126,7 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
             Ticket ticket = new();
             string returnMsg;
             var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
             ticket = _ticketService.Get(id);
 
@@ -128,7 +135,7 @@ namespace AndreAirlinesAPI3._0Ticket.Controllers
             else if (ticket.ErrorCode != null)
                 return BadRequest("Reserva - " + ErrorMessage.ReturnMessage(ticket.ErrorCode));
             else
-                returnMsg = await _ticketService.Remove(ticket.Id, ticketIn, user);
+                returnMsg = await _ticketService.Remove(ticket.Id, ticketIn, user, token);
 
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));

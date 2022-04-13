@@ -2,8 +2,8 @@
 {
     public class AndreAirlinesDatabaseAirportSettings : IAndreAirlinesDatabaseAirportSettings
     {
-        public string AirportCollectionName { get; set; }
-        public string ConnectionString { get; set; }
-        public string DatabaseName { get; set; }
+        public string AirportCollectionName { get; set; } = "Airport";
+        public string ConnectionString { get; set; } = "mongodb://localhost:27017";
+        public string DatabaseName { get; set; } = "dbandreairlinesairport";
     }
 }

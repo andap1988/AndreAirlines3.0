@@ -1,13 +1,14 @@
 ﻿using AndreAirlinesAPI3._0Models;
 using Newtonsoft.Json;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace AndreAirlinesAPI3._0Flight.Service
 {
     public class SearchAirship
     {
-        public static async Task<Airship> ReturnAirship(Airship airshipIn, bool isRegistration)
+        public static async Task<Airship> ReturnAirship(Airship airshipIn, bool isRegistration, string token)
         {
             HttpClient client = new HttpClient();
             Airship airship = new();
@@ -17,6 +18,8 @@ namespace AndreAirlinesAPI3._0Flight.Service
                 composeLink = "Airships/registration/" + airshipIn.Registration;
             else
                 composeLink = "Airships/" + airshipIn.Id;
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {

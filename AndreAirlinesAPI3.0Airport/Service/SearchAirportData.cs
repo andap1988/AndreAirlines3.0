@@ -1,16 +1,19 @@
 ﻿using AndreAirlinesAPI3._0Models;
 using Newtonsoft.Json;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace AndreAirlinesAPI3._0Airport.Service
 {
-    public class SearchAiportData
+    public class SearchAirportData
     {
-        public static async Task<AirportData> ReturnAirportData(string iataCode)
+        public static async Task<AirportData> ReturnAirportData(string iataCode, string token)
         {
             HttpClient client = new HttpClient();
             AirportData aiportData = new();
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {

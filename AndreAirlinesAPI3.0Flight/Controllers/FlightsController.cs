@@ -4,6 +4,7 @@ using AndreAirlinesAPI3._0Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -42,6 +43,7 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public ActionResult<List<Flight>> Get()
         {
             var flights = _flightService.Get();
@@ -53,6 +55,7 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
         }
 
         [HttpGet("{id}", Name = "GetFlight")]
+        [Authorize]
         public ActionResult<Flight> Get(string id)
         {
             var flight = _flightService.Get(id);
@@ -70,8 +73,9 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
         public async Task<ActionResult<Flight>> Create(Flight flight)
         {
             var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
-            var flightInsertion = await _flightService.Create(flight, user);
+            var flightInsertion = await _flightService.Create(flight, user, token);
 
             if (flightInsertion.ErrorCode == "noLog")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -92,6 +96,7 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
             Flight flight = new();
             string returnMsg;
             var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
             flight = _flightService.Get(id);
 
@@ -100,7 +105,7 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
             else if (flight.ErrorCode != null)
                 return BadRequest("Voo - " + ErrorMessage.ReturnMessage(flight.ErrorCode));
             else
-                returnMsg = await _flightService.Update(id, flightIn, user);
+                returnMsg = await _flightService.Update(id, flightIn, user, token);
 
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));
@@ -115,6 +120,7 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
             Flight flight = new();
             string returnMsg;
             var user = User.Identity.Name;
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
 
             flight = _flightService.Get(id);
 
@@ -123,7 +129,7 @@ namespace AndreAirlinesAPI3._0Flight.Controllers
             else if (flight.ErrorCode != null)
                 return BadRequest("Voo - " + ErrorMessage.ReturnMessage(flight.ErrorCode));
             else
-                returnMsg = await _flightService.Remove(flight.Id, flight, user);
+                returnMsg = await _flightService.Remove(flight.Id, flight, user, token);
 
             if (returnMsg != "ok")
                 return BadRequest("Log - " + ErrorMessage.ReturnMessage("noLog"));

@@ -91,9 +91,9 @@ namespace AndreAirlinesAPI3._0Passenger.Service
             }
         }
 
-        public async Task<Passenger> Create(Passenger passenger, string username)
+        public async Task<Passenger> Create(Passenger passenger, string username, string token)
         {
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
             {
@@ -138,6 +138,7 @@ namespace AndreAirlinesAPI3._0Passenger.Service
             log.ErrorCode = null;
 
             var returnMsg = await PostLogService.InsertLog(log);
+            // returnMsg = "ok";
 
             if (returnMsg != "ok")
             {
@@ -150,10 +151,10 @@ namespace AndreAirlinesAPI3._0Passenger.Service
             return passenger;
         }
 
-        public async Task<string> Update(string id, Passenger passengerIn, string username)
+        public async Task<string> Update(string id, Passenger passengerIn, string username, string token)
         {
             var passengerBefore = Get(passengerIn.Id);
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
                 return "noUser";
@@ -169,6 +170,7 @@ namespace AndreAirlinesAPI3._0Passenger.Service
             log.ErrorCode = null;
 
             var returnMsg = await PostLogService.InsertLog(log);
+            // returnMsg = "ok";
 
             if (returnMsg != "ok")
                 _passenger.ReplaceOne(passenger => passenger.Id == id, passengerBefore);
@@ -176,10 +178,10 @@ namespace AndreAirlinesAPI3._0Passenger.Service
             return returnMsg;
         }
 
-        public async Task<string> Remove(string id, Passenger passengerIn, string username)
+        public async Task<string> Remove(string id, Passenger passengerIn, string username, string token)
         {
             var passengerBefore = Get(passengerIn.Id);
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
                 return "noUser";
@@ -195,6 +197,7 @@ namespace AndreAirlinesAPI3._0Passenger.Service
             log.ErrorCode = null;
 
             var returnMsg = await PostLogService.InsertLog(log);
+            // returnMsg = "ok";
 
             if (returnMsg != "ok")
                 _passenger.InsertOne(passengerBefore);

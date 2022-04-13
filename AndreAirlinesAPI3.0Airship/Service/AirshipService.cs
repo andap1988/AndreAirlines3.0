@@ -91,9 +91,9 @@ namespace AndreAirlinesAPI3._0Airship.Service
             }
         }
 
-        public async Task<Airship> Create(Airship airship, string username)
+        public async Task<Airship> Create(Airship airship, string username, string token)
         {
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
             {
@@ -141,10 +141,10 @@ namespace AndreAirlinesAPI3._0Airship.Service
             return airship;
         }
 
-        public async Task<string> Update(string id, Airship airshipIn, string username)
+        public async Task<string> Update(string id, Airship airshipIn, string username, string token)
         { 
             var airshipBefore = GetRegistration(airshipIn.Registration);
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
                 return "noUser";
@@ -167,10 +167,10 @@ namespace AndreAirlinesAPI3._0Airship.Service
             return returnMsg;
         }
 
-        public async Task<string> Remove(string id, Airship airshipIn, string username)
+        public async Task<string> Remove(string id, Airship airshipIn, string username, string token)
         {
             var airshipBefore = GetRegistration(airshipIn.Registration);
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
                 return "noUser";

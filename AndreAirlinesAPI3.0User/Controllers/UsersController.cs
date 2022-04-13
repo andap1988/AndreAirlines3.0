@@ -5,6 +5,7 @@ using AndreAirlinesAPI3._0User.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -108,6 +109,8 @@ namespace AndreAirlinesAPI3._0User.Controllers
         [Authorize(Roles = "adm")]
         public async Task<ActionResult<User>> Create(User user)
         {
+            var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ")[1];
+
             if (utilizationSearchZipcode)
             {
                 Address address = await SearchZipcode.ReturnAddress(user.Address);

@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AndreAirlinesAPI3.0ErrorMessages\AndreAirlinesAPI3.0ErrorMessages.csproj" />
-    <ProjectReference Include="..\AndreAirlinesAPI3.0Models\AndreAirlinesAPI3.0Models.csproj" />
     <ProjectReference Include="..\AndreAirlinesAPI3.0SearchZipcode\AndreAirlinesAPI3.0SearchZipcode.csproj" />
   </ItemGroup>
 

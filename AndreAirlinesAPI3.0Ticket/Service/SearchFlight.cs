@@ -1,16 +1,19 @@
 ﻿using AndreAirlinesAPI3._0Models;
 using Newtonsoft.Json;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace AndreAirlinesAPI3._0Ticket.Service
 {
     public class SearchFlight
     {
-        public static async Task<Flight> ReturnFlight(Flight flightIn)
+        public static async Task<Flight> ReturnFlight(Flight flightIn, string token)
         {
             HttpClient client = new HttpClient();
             Flight flight = new();
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {

@@ -70,12 +70,12 @@ namespace AndreAirlinesAPI3._0Flight.Service
             }
         }
 
-        public async Task<Flight> Create(Flight flight, string username)
+        public async Task<Flight> Create(Flight flight, string username, string token)
         {
             bool isIataCode = false;
             bool isRegistration = false;
 
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
             {
@@ -87,7 +87,7 @@ namespace AndreAirlinesAPI3._0Flight.Service
             if (flight.Origin.IataCode != null)
                 isIataCode = true;
 
-            var airportOrigin = await SearchAirport.ReturnAirport(flight.Origin, isIataCode);
+            var airportOrigin = await SearchAirport.ReturnAirport(flight.Origin, isIataCode, token);
             isIataCode = false;
 
             if (airportOrigin.ErrorCode != null)
@@ -102,7 +102,7 @@ namespace AndreAirlinesAPI3._0Flight.Service
             if (flight.Origin.IataCode != null)
                 isIataCode = true;
 
-            var airportDestiny = await SearchAirport.ReturnAirport(flight.Destiny, isIataCode);
+            var airportDestiny = await SearchAirport.ReturnAirport(flight.Destiny, isIataCode, token);
 
             if (airportDestiny.ErrorCode != null)
             {
@@ -116,7 +116,7 @@ namespace AndreAirlinesAPI3._0Flight.Service
             if (flight.Airship.Registration != null)
                 isRegistration = true;
 
-            var airship = await SearchAirship.ReturnAirship(flight.Airship, isRegistration);
+            var airship = await SearchAirship.ReturnAirship(flight.Airship, isRegistration, token);
 
             if (airship.ErrorCode != null)
             {
@@ -138,6 +138,7 @@ namespace AndreAirlinesAPI3._0Flight.Service
             log.ErrorCode = null;
 
             var returnMsg = await PostLogService.InsertLog(log);
+            // returnMsg = "ok";
 
             if (returnMsg != "ok")
             {
@@ -150,10 +151,10 @@ namespace AndreAirlinesAPI3._0Flight.Service
             return flight;
         }
 
-        public async Task<string> Update(string id, Flight flightIn, string username)
+        public async Task<string> Update(string id, Flight flightIn, string username, string token)
         {
             var flightBefore = Get(flightIn.Id);
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
                 return "noUser";
@@ -169,6 +170,7 @@ namespace AndreAirlinesAPI3._0Flight.Service
             log.ErrorCode = null;
 
             var returnMsg = await PostLogService.InsertLog(log);
+            // returnMsg = "ok";
 
             if (returnMsg != "ok")
                 _flight.ReplaceOne(airport => airport.Id == id, flightBefore);
@@ -176,10 +178,10 @@ namespace AndreAirlinesAPI3._0Flight.Service
             return returnMsg;
         }
 
-        public async Task<string> Remove(string id, Flight flightIn, string username)
+        public async Task<string> Remove(string id, Flight flightIn, string username, string token)
         {
             var flightBefore = Get(flightIn.Id);
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
                 return "noUser";
@@ -195,6 +197,7 @@ namespace AndreAirlinesAPI3._0Flight.Service
             log.ErrorCode = null;
 
             var returnMsg = await PostLogService.InsertLog(log);
+            // returnMsg = "ok";
 
             if (returnMsg != "ok")
                 _flight.InsertOne(flightBefore);

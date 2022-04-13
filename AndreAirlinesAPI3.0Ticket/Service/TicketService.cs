@@ -70,10 +70,10 @@ namespace AndreAirlinesAPI3._0Ticket.Service
             }
         }            
 
-        public async Task<Ticket> Create(Ticket ticket, string username)
+        public async Task<Ticket> Create(Ticket ticket, string username, string token)
         {
             bool isCpf = false;
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
             {
@@ -82,7 +82,7 @@ namespace AndreAirlinesAPI3._0Ticket.Service
                 return ticket;
             }
 
-            var flight = await SearchFlight.ReturnFlight(ticket.Flight);
+            var flight = await SearchFlight.ReturnFlight(ticket.Flight, token);
 
             if (flight.ErrorCode != null)
             {
@@ -96,7 +96,7 @@ namespace AndreAirlinesAPI3._0Ticket.Service
             if (ticket.Passenger.Cpf != null)
                 isCpf = true;
 
-            var passenger = await SearchPassenger.ReturnPassenger(ticket.Passenger, isCpf);
+            var passenger = await SearchPassenger.ReturnPassenger(ticket.Passenger, isCpf, token);
 
             if (passenger.ErrorCode != null)
             {
@@ -107,7 +107,7 @@ namespace AndreAirlinesAPI3._0Ticket.Service
             else
                 ticket.Passenger = passenger;
 
-            var basePrice = await SearchBasePrice.ReturnBasePrice(ticket.BasePrice);
+            var basePrice = await SearchBasePrice.ReturnBasePrice(ticket.BasePrice, token);
 
             if (basePrice.ErrorCode != null)
             {
@@ -154,10 +154,10 @@ namespace AndreAirlinesAPI3._0Ticket.Service
             return ticketWithPrice;
         }
 
-        public async Task<string> Update(string id, Ticket ticketIn, string username)
+        public async Task<string> Update(string id, Ticket ticketIn, string username, string token)
         {
             var ticketBefore = Get(ticketIn.Id);
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
                 return "noUser";
@@ -180,10 +180,10 @@ namespace AndreAirlinesAPI3._0Ticket.Service
             return returnMsg;
         }
 
-        public async Task<string> Remove(string id, Ticket ticketIn, string username)
+        public async Task<string> Remove(string id, Ticket ticketIn, string username, string token)
         {
             var ticketBefore = Get(ticketIn.Id);
-            var user = await SearchUser.ReturnUser(username);
+            var user = await SearchUser.ReturnUser(username, token);
 
             if (user == null || user.ErrorCode != null)
                 return "noUser";
