@@ -2,8 +2,8 @@
 {
     public class AndreAirlinesDatabaseBasePriceSettings : IAndreAirlinesDatabaseBasePriceSettings
     {
-        public string BasePriceCollectionName { get; set; }
-        public string ConnectionString { get; set; }
-        public string DatabaseName { get; set; }
+        public string BasePriceCollectionName { get; set; } = "BasePrice";
+        public string ConnectionString { get; set; } = "mongodb://localhost:27017";
+        public string DatabaseName { get; set; } = "dbandreairlinesbaseprice";
     }
 }
