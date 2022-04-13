@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="RabbitMQ.Client" Version="6.2.4" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\AndreAirlinesAPI3.0Models\AndreAirlinesAPI3.0Models.csproj" />
   </ItemGroup>
 

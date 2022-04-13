@@ -18,10 +18,10 @@ namespace AndreAirlinesAPI3._0RabbitMQ.Service
         {
             try
             {
-                if (client.BaseAddress == null) client.BaseAddress = new Uri("");
+                if (client.BaseAddress == null) client.BaseAddress = new Uri("https://localhost:44370/");
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                await client.PostAsJsonAsync("api/Logs", log);
+                await client.PostAsJsonAsync("api/LogsToMongo", log);
             }
             catch (HttpRequestException exception)
             {
